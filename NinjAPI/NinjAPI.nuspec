@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>NinjAPI</id>
+    <version>0.1.7-alpha</version>
+    <title>NinjAPI</title>
+	<projectUrl>https://github.com/SchuttHaller/NinjAPI/</projectUrl>
+    <authors>José Hernández Morales</authors>
+    <owners>José Hernández Morales</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>NinjAPI allows you create REST APIs in a simple and fast way</description>
+	<summary>A simple RESTFul Api builder using EF and inspired in OData</summary>
+    <releaseNotes>First Release NinjApi</releaseNotes>
+    <copyright>Copyright 2019</copyright>
+    <tags>NinjAPI API REST WebApi AspNet AspNetWebApi</tags>
+	<license type="expression">GPL-3.0-only</license>
+    <dependencies>
+      <dependency id="EntityFramework" version="6.2.0" />
+      <dependency id="Microsoft.AspNet.WebApi" version="5.2.7" />
+      <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.7" />
+      <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.7" />
+      <dependency id="Microsoft.AspNet.WebApi.WebHost" version="5.2.7" />
+      <dependency id="Newtonsoft.Json" version="12.0.1" />
+    </dependencies>
+  </metadata>
+</package>
