@@ -168,10 +168,10 @@ namespace NinjAPI
         /// </summary>
         /// <returns></returns>
         [HttpGet, Route("")]
-        [Queryable(MappingDelegate = "CollectionMapping")]
-        public IQueryable<CollectionTEntity> GetAll()
+        [Queryable]
+        public INinjable<CollectionTEntity> GetAll()
         {
-            return CollectionDbSet.AsQueryable();
+            return CollectionDbSet.AsQueryable().AsNinjable(CollectionMapping);
         }
 
         /// <summary>
@@ -245,31 +245,6 @@ namespace NinjAPI
         }
 
         #endregion
-
-        /// <summary>
-        /// Validation for dbcontext.SaveChanges() returns null if all is OK or BadRequest with validation errors in other case.
-        /// </summary>
-        protected HttpResponseMessage ValidateSaveDBContext(DbContext context)
-        {
-            try
-            {
-                context.SaveChanges();
-            }
-            catch (DbEntityValidationException ex)
-            {
-                var errorMessages = ex.EntityValidationErrors
-                    .SelectMany(x => x.ValidationErrors)
-                    .Select(x => KeyValuePair.Create(x.PropertyName, x.ErrorMessage)).ToList();
-                
-                return BadRequest(errorMessages);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(KeyValuePair.Create(ex.Source, ex.Message));
-            }
-
-            return null;
-        }
 
         protected override void Dispose(bool disposing)
         {

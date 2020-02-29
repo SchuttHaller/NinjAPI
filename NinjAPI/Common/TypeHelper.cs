@@ -1,4 +1,5 @@
 ﻿using NinjAPI.Properties;
+using NinjAPI.Results;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -158,14 +159,19 @@ namespace NinjAPI.Common
         private static Type GetImplementedIEnumerableType(Type type)
         {
             // get inner type from Task<T>
-            if (TypeHelper.IsGenericType(type) && type.GetGenericTypeDefinition() == typeof(Task<>))
+            if (TypeHelper.IsGenericType(type))
             {
-                type = type.GetGenericArguments().First();
+                Type genericType = type.GetGenericTypeDefinition();
+                if(genericType == typeof(Task<>))
+                {
+                    type = type.GetGenericArguments().First();
+                } 
             }
-
+                
             if (TypeHelper.IsGenericType(type) && TypeHelper.IsInterface(type) &&
                 (type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ||
-                 type.GetGenericTypeDefinition() == typeof(IQueryable<>)))
+                 type.GetGenericTypeDefinition() == typeof(IQueryable<>) ||
+                 type.GetGenericTypeDefinition() == typeof(INinjable<>)))
             {
                 // special case the IEnumerable<T>
                 return GetInnerGenericType(type);

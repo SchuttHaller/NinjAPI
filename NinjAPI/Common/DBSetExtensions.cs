@@ -37,7 +37,6 @@ namespace NinjAPI.Common
                 return key;
 
             // Last option is return first primitive so it helps to create default order
-            // but gonna fails to find a single element(?)
             keyName = entityType.Properties.FirstOrDefault(p => p.IsPrimitiveType)?.Name;
             return typeof(TEntity).GetPropertyNoCase(keyName);
         }

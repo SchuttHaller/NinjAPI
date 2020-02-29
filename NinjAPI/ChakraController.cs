@@ -1,7 +1,11 @@
-﻿using NinjAPI.Properties;
+﻿using NinjAPI.Common;
+using NinjAPI.Properties;
 using NinjAPI.Validation;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
+using System.Data.Entity.Validation;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Web.Http;
@@ -96,6 +100,32 @@ namespace NinjAPI
         public HttpResponseMessage NotFound(string message = null)
         {            
             return Request.CreateErrorResponse(HttpStatusCode.NotFound, message ?? Resources.ResourceNotFound);
+        }
+
+
+        /// <summary>
+        /// Validation for dbcontext.SaveChanges() returns null if all is OK or BadRequest with validation errors in other case.
+        /// </summary>
+        public HttpResponseMessage ValidateSaveDBContext(DbContext context)
+        {
+            try
+            {
+                context.SaveChanges();
+            }
+            catch (DbEntityValidationException ex)
+            {
+                var errorMessages = ex.EntityValidationErrors
+                    .SelectMany(x => x.ValidationErrors)
+                    .Select(x => KeyValuePair.Create(x.PropertyName, x.ErrorMessage)).ToList();
+
+                return BadRequest(errorMessages);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(KeyValuePair.Create(ex.Source, ex.Message));
+            }
+
+            return null;
         }
     }
 }

@@ -65,6 +65,7 @@
     <Compile Include="Common\KeyValuePair.cs" />
     <Compile Include="Common\Error.cs" />
     <Compile Include="Common\ErrorHelper.cs" />
+    <Compile Include="Common\QueryExtensions.cs" />
     <Compile Include="Common\TypeHelper.cs" />
     <Compile Include="Configure.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
@@ -85,15 +86,14 @@
     <Compile Include="Query\QueryValidator.cs" />
     <Compile Include="Results\ErrorResult.cs" />
     <Compile Include="Results\HttpRequestMessageExtensions.cs" />
+    <Compile Include="Results\INinjable.cs" />
+    <Compile Include="Results\Ninjable.cs" />
     <Compile Include="Results\ResultHandler.cs" />
     <Compile Include="Routing\RouteProvider.cs" />
     <Compile Include="Routing\RouteRegister.cs" />
     <Compile Include="Validation\ValidateModelState.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Formatter\Deserialization\" />
-    <Folder Include="Formatter\Serialization\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />

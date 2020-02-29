@@ -21,7 +21,7 @@ namespace NinjAPI.Query
         /// <summary>
         /// 
         /// </summary>
-        public string MappingDelegate = null;
+        //public string MappingDelegate = null;
 
         /// <summary>
         /// 
@@ -83,6 +83,11 @@ namespace NinjAPI.Query
                 throw ErrorHelper.ArgumentNull("actionExecutedContext.Request");
             }
 
+            if (!queryData.IsValid)
+            {
+                throw new InvalidOperationException("Invalid QueryData");
+            }
+
             HttpResponseMessage response = actionExecutedContext.Response;
 
             if (response != null && response.IsSuccessStatusCode && response.Content != null)
@@ -92,35 +97,43 @@ namespace NinjAPI.Query
                     throw new InvalidOperationException("actionExecutedContext QueryingRequiresObjectContent");
                 }
 
-                IEnumerable enumerable = responseContent.Value as IEnumerable;
-                IQueryable queryable = (enumerable as IQueryable) ?? enumerable.AsQueryable();
+                IQueryable queryableActionResult = null;
+                Func<IQueryable, IQueryable> mapper = null;
+                Type resultType = responseContent.ObjectType;
 
-                if (queryable == null)
+                if(responseContent.Value is INinjable ninjable)
+                {
+                    queryableActionResult = ninjable.Queryable;
+                    mapper = ninjable.Mapper;
+                }
+                else if (responseContent.Value is IEnumerable enumResult)
+                {
+                    queryableActionResult = enumResult.AsQueryable();
+                }
+                else if (responseContent.Value is IQueryable queryableResult)
+                {
+                    queryableActionResult = queryableResult;
+                }
+
+                if (queryableActionResult == null)
                     throw new InvalidOperationException("Only Collections Supported");
-  
-                if (queryData.IsValid)
-                {
-                    //Performe requested query
-                    IQueryable queryResult = ApplyQuery(queryable, this.queryData);
-                    
-                    //No result
-                    if (queryResult == null) {
-                        actionExecutedContext.Response = request.NoContent();
-                    }
 
-                    //mapping
-                    if (!string.IsNullOrWhiteSpace(MappingDelegate))
-                    {
-                        queryResult = ApplyMapping(queryResult, actionExecutedContext);
-                    }
-                        
+                //Performe requested query
+                IQueryable queryResult = ApplyQuery(queryableActionResult, this.queryData);
 
-                    actionExecutedContext.Response = request.Collection(this.queryData, queryResult);
-                }
-                else
+                //apply mapper
+                if(mapper != null)
                 {
-                    throw new InvalidOperationException("Invalid QueryData");
+                    queryResult = mapper(queryResult);
                 }
+
+                //No result
+                if (queryResult == null)
+                {
+                    actionExecutedContext.Response = request.NoContent();
+                }
+
+                actionExecutedContext.Response = request.Collection(this.queryData, queryResult);
 
             }
         }
@@ -143,30 +156,6 @@ namespace NinjAPI.Query
             }
 
             return this.queryData.ApplyTo(queryable);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="queryable"></param>
-        /// <param name="actionExecutedContext"></param>
-        /// <returns></returns>
-        private IQueryable ApplyMapping(IQueryable queryable, HttpActionExecutedContext actionExecutedContext)
-        {
-            //ONLY WORKS WITH DELEGATES IN SAME CONTROLLER
-            var controller = actionExecutedContext.ActionContext.ControllerContext.Controller;
-
-            MethodInfo method = controller.GetType().GetMethod(MappingDelegate);
-
-            if(method == null)
-                throw new InvalidOperationException("MappingDelegate Method not exist");
-
-            object result = method.Invoke(controller, new object[] { queryable });
-
-            if(!(result is IQueryable))
-                throw new InvalidOperationException("MappingDelegate must return IQueryable");
-
-            return result as IQueryable;
         }
     }
 }
