@@ -89,8 +89,10 @@ namespace NinjAPI.Query.Expressions
         {
 
             ParameterExpression parameter = Expression.Parameter(entityType, "p");
-            var _lambdaParameters = new Dictionary<string, ParameterExpression>();
-            _lambdaParameters.Add("p", parameter);
+            var _lambdaParameters = new Dictionary<string, ParameterExpression>
+            {
+                { "p", parameter }
+            };
 
             //ParameterExpression parameter = Expression.Parameter(entityType, "p");
             Expression body = null;

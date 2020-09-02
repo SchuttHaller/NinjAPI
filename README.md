@@ -2,32 +2,39 @@
 
 ### What is NinjAPI?
 
-NinjAPI is a REST API builder library based on AspNet WebApi and EF that allows create CRUD operations, result pagination and filter in a fast and easy way.
+NinjAPI is a REST API builder library based on AspNet WebApi and EF that allows creating CRUD operations, pagination and filter in a fast and easy way.
 Created with didactic purposes and to deal with boring product catalog APIs, all inspired by ODATA.
 
 ### How do I get started?
 
- First configure NinjAPI in your WebApiConfig startup:
+ First, configure NinjAPI in your WebApiConfig startup:
  
  ```csharp
-public static class WebApiConfig{    public static void Register(HttpConfiguration config)	{    	config.NinjAPIConfig();    }}
+public static class WebApiConfig
+{
+    public static void Register(HttpConfiguration config)
+	{
+    	config.NinjAPIConfig();
+    }
+}
  ```
  
- Once you have created you EF models, create your first NinjaController and declare DbContext property that your api will use:
+ Once you have created you EF models, create your first NinjaController and declare DbContext property that your API will use:
  
 ```csharp
 [RoutePrefix("api/students")]
 public class StudentsController : NinjaController<Students>
 {
 	private readonly DbContext _DbContext = new SchoolContext();
-	protected override DbContext DbContext => _DbContext;}
+	protected override DbContext DbContext => _DbContext;
+}
 ```
 
-And that's it, the controller now have GET, POST, PUT and DELETE operations for your model with no more configuration needed.
+And that's it, the controller now has GET, POST, PUT and DELETE operations for your model with no more configuration needed.
 
 ### Routing
 
-Keep in mind that by this moment is **obligatory** the use of **RoutePrefix** attribute to set the controller route. So the routes for the above example would be:
+Keep in mind that by this moment you must use the **RoutePrefix** attribute to set the controller route. So the routes for the above example would be:
 
 ```
 GET    /api/students	
@@ -40,13 +47,13 @@ An automated routing its pretended to future versions.
 
 ### Collection results 
 
-Colletion results i.e. `GET    /api/students ` by default will not paginate the results so a request made to that action will return every record on db. 
+Collection results i.e. `GET    /api/students ` by default will not paginate the results so a request made to this action will return every record on DB. 
 
-####Pagination
-In order to get a paginated result just provide the query params `?pagesize` and `?page`.`?page` default value takes **1** if is not recived.
+#### Pagination
+To get a paginated result just provide the query params `?pagesize` and `?page`.`?page` default value takes **1** if it is not received.
 
-#####Extra Headers
-When a result is paginated the response will contain a two extra headers, **Link** and **X-Total-Count**. Link header have links to first, prev, next and last page and X-Total-Count the total count of entries in db i.e.
+##### Extra Headers
+When a result is paginated the response will contain two extra headers, **Link** and **X-Total-Count**. Link header has links to first, prev, next and last page and X-Total-Count the total count of entries in db i.e.
 
 ```
 https://myaplication.com/api/students?page=5&pageSize=10
@@ -68,7 +75,7 @@ Pragma →no-cache
 
 ```
 
-####Order
+#### Order
 You can specify the order of results by providing `?orderby` which can receive up to two columns i.e.
 
 ```
@@ -81,7 +88,7 @@ where `desc` is descending order
 
 
 
-####Filter
+#### Filter
 To filter results the ```?filter``` param allows expressions in a string with syntax: ```[Field/Column] [operator] [Value]``` and allows the logic operators **and** & **or** to mix expressions.  
 
 i.e.
@@ -104,6 +111,6 @@ https://myaplication.com/api/students?filter=lastname lk Smith or lastname lk Jo
 | le       | Less Than or Equal    |
 | lk       | Like                  |
 | and      | Logical conjunction   |
-| or		 | Logical disjunction   |
+| or	   | Logical disjunction   |
 
 
