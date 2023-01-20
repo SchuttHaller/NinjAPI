@@ -19,4 +19,8 @@
     <ProjectReference Include="..\..\src\NinjAPI\NinjAPI.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Expressions\" />
+  </ItemGroup>
+
 </Project>
