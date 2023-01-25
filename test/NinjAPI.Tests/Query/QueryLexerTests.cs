@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace NinjAPI.Tests.Query
 {
     [TestClass]
-    public class QueryAnalyzerTests
+    public class QueryLexerTests
     {
 
         [TestMethod]
@@ -19,22 +19,22 @@ namespace NinjAPI.Tests.Query
         [DataRow(null, 0)]
         public void Filter_NullOrEmptyString_ReturnsEmptyTable(string query, int expected)
         {
-            var queryAnalyzer = new QueryLexer();
-            var result = queryAnalyzer.ScanQuery(query);
+            var queryAnalyzer = new QueryLexer(query);
+            var result = queryAnalyzer.GetTokenTable();
 
             Assert.AreEqual(expected, result.Tokens.Count);
         }
 
         [TestMethod]
         [DataRow("id eq 1", 3, 1, 1, 1)]
-        [DataRow("name lk felipe", 3, 1, 1, 1)]
+        [DataRow("name lk 'felipe'", 5, 1, 1, 1)]
         [DataRow("revenue gt 100", 3, 1, 1, 1)]
         [DataRow("revenue lt 200", 3, 1, 1, 1)]
         [DataRow("total eq 500", 3, 1, 1, 1)]
         public void Filter_QueryWithSimpleExpression_ReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals)
         {
-            var queryAnalyzer = new QueryLexer();
-            var result = queryAnalyzer.ScanQuery(query);
+            var queryAnalyzer = new QueryLexer(query);
+            var result = queryAnalyzer.GetTokenTable();
 
             Assert.AreEqual(expectedCount, result.Tokens.Count);
             Assert.AreEqual(expectedIdentifiers, result.IdentifierCount);
@@ -48,8 +48,8 @@ namespace NinjAPI.Tests.Query
         [DataRow("id lk test001 or id lk test222 or createddate gt 23/11/12 and revenue eq 0", 15, 4, 4, 4, 3)]
         public void Filter_QueryWithLogicalOperators_ReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals)
         {
-            var queryAnalyzer = new QueryLexer();
-            var result = queryAnalyzer.ScanQuery(query);
+            var queryAnalyzer = new QueryLexer(query);
+            var result = queryAnalyzer.GetTokenTable();
 
             Assert.AreEqual(expectedCount, result.Tokens.Count);
             Assert.AreEqual(expectedIdentifiers, result.IdentifierCount);
@@ -65,8 +65,8 @@ namespace NinjAPI.Tests.Query
         [DataRow("(id lk test001 or id lk test222) or ((createddate gt 23/11/12 and revenue eq 0) and resultdate eq 23/11/12)", 25, 5, 5, 5, 4, 6)]
         public void Filter_QueryWithDelimiters_ReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals, int expectedDelimiters)
         {
-            var queryAnalyzer = new QueryLexer();
-            var result = queryAnalyzer.ScanQuery(query);
+            var queryAnalyzer = new QueryLexer(query);
+            var result = queryAnalyzer.GetTokenTable();
 
             Assert.AreEqual(expectedCount, result.Tokens.Count);
             Assert.AreEqual(expectedIdentifiers, result.IdentifierCount);
@@ -83,9 +83,8 @@ namespace NinjAPI.Tests.Query
         [DataRow("ites(((((((((t test testttt")]
         public void Filter_WrongQuery_ThrowsInvalidTypeException(string query)
         {
-            var queryAnalyzer = new QueryLexer();
-
-            Assert.ThrowsException<NotSupportedException>(() => queryAnalyzer.ScanQuery(query));
+            var queryAnalyzer = new QueryLexer(query); 
+            Assert.ThrowsException<NotSupportedException>(() => queryAnalyzer.GetTokenTable());
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using NinjAPI.Expressions;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -11,23 +12,26 @@ namespace NinjAPI.Query
 {
     public class QueryLexer
     {
+        private readonly string _originalQuery;
         private readonly LexicalTable _queryTable = new();
-        private FlagType _flag = FlagType.Identifier;
-        private string? _originalQuery;
+        private FlagType _flag = FlagType.Identifier;     
 
-        private static bool IsDelimiter(char delimiter) => TokenCollections.Delimiters.Contains(delimiter);
-        private int GetErrorPosition(string query) => _originalQuery.Length - query.Length;
-
-        public LexicalTable ScanQuery(string query)
+        public QueryLexer(string query) 
         {
-            if (string.IsNullOrWhiteSpace(query)) return _queryTable;
+            if (query is null) _originalQuery = string.Empty;
+            _originalQuery = query!.ToUpper();
+        }
 
-            _originalQuery = query;
-
-            GetConcurrences(query.ToUpper());
-
+        public LexicalTable GetTokenTable()
+        {
+            if (string.IsNullOrWhiteSpace(_originalQuery)) return _queryTable;
+            GetConcurrences(_originalQuery);
             return _queryTable;
         }
+
+        private static bool IsDelimiter(char delimiter) => TokenCollections.Delimiters.Contains(delimiter);
+
+        private int GetErrorPosition(string query) => _originalQuery.Length - query.Length;
 
         private void GetConcurrences(string query)
         {
