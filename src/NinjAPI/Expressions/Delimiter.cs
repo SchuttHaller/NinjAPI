@@ -11,6 +11,9 @@ namespace NinjAPI.Expressions
         public static readonly char OpenParent = '(';
         public static readonly char CloseParent = ')';
         public static readonly char SingleQuote = '\'';
+        public static readonly char DoubleQuote = '\"';
         public static readonly char Space = ' ';
+        public static readonly char Backslash = '\\';
+        public static readonly char NullChar = '\0';
     }
 }
