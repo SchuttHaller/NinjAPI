@@ -1,6 +1,9 @@
-﻿using System;
+﻿using NinjAPI.Query;
+using NinjAPI.Tests.Query.Mocks;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,22 +12,36 @@ namespace NinjAPI.Tests.Query
     [TestClass]
     public class QueryParserTests
     {
-        [TestMethod]
-        [DataRow("id eq 10")]
-        [DataRow("description lk 'its my room'")]
-        [DataRow("(price gt 50 and date ge 2022-01-01) or price lt 10")]
-        public void ValidQuery_IsValid(string query)
+        private readonly IEnumerable<(string str, Expression<Func<MockEntity, bool>> exp)> _validQueries;
+        public QueryParserTests()
         {
-
+            _validQueries = new (string str, Expression<Func<MockEntity, bool>> exp)[]
+            {
+                ("revenue gt 100", e => e.Revenue >= 100),
+                ("revenue lt 200", e => e.Revenue <= 200),
+                ("id eq 1 and name lk 'pancho lopez'", e => e.Id == 1 && e.Name!.Contains("pancho lopez")),
+                ("(id ne 1 and id ne 3) or id gt 5", e => (e.Id != 1 && e.Id != 3) || e.Id > 5),
+                ("(id ne 1 and id ne 3) or id gt 5 and children[all(anotherid gt 0)]", e => (e.Id != 1 && e.Id != 3) || e.Id > 5 && e.Children!.All(c => c.AnotherId > 0)),
+                ("id ne 1 and (id ne 3 or id gt 5) and children[any(name sw 'test')]", e => e.Id != 1 && (e.Id != 3 || e.Id > 5) && e.Children!.Any(c => c.Name!.StartsWith("test"))),
+            };
         }
 
         [TestMethod]
-        [DataRow("id eq 10()")]
-        [DataRow("description lk 'its my room' eq")]
-        [DataRow("()))))price gt 50 and date ge 2022-01-01) or price lt 10 price")]
+        public void ValidQuery_IsValid()
+        {
+           foreach(var query in _validQueries)
+            {
+                var tokens = new QueryLexer(query.str).GetTokens();
+                var parser = new QueryParser<MockEntity>(tokens);
+                Assert.IsTrue(parser.IsValid);
+            }
+        }
+
+        [TestMethod]
         public void InvalidQuery_ThrowsError()
         {
 
         }
+
     }
 }

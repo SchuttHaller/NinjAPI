@@ -14,6 +14,5 @@ namespace NinjAPI.Query
         public static int LogicalOperatorCount(this IEnumerable<Token> tokens) => tokens.Count(x => x.Code == TokenType.LogicalOperator);
         public static int DelimiterCount(this IEnumerable<Token> tokens) => tokens.Count(x => x.Code != TokenType.Identifier && x.Code != TokenType.ComparisionOperator && x.Code != TokenType.Constant && x.Code != TokenType.LogicalOperator);
 
-
     }
 }

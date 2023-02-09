@@ -8,14 +8,14 @@ namespace NinjAPI.Expressions
 {
     public static class ComparisionOperator
     {
-        public static readonly string Equal = "EQ";
-        public static readonly string NotEqual = "NE";
-        public static readonly string GreaterThan = "GT";
-        public static readonly string GreaterOrEqual = "GE";
-        public static readonly string LessThan = "LT";
-        public static readonly string LessOrEqual = "LE";
-        public static readonly string Like = "LK";
-        public static readonly string StartsWith = "SW";
-        public static readonly string EndsWith = "EW";
+        public const string Equal = "EQ";
+        public const string NotEqual = "NE";
+        public const string GreaterThan = "GT";
+        public const string GreaterOrEqual = "GE";
+        public const string LessThan = "LT";
+        public const string LessOrEqual = "LE";
+        public const string Like = "LK";
+        public const string StartsWith = "SW";
+        public const string EndsWith = "EW";
     }
 }

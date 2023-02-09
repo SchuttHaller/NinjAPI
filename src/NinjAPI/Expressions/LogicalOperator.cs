@@ -8,7 +8,7 @@ namespace NinjAPI.Expressions
 {
     public static class LogicalOperator
     {
-        public static readonly string AND = "AND";
-        public static readonly string OR = "OR";
+        public const string AND = "AND";
+        public const string OR = "OR";
     }
 }

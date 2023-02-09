@@ -2,7 +2,7 @@
 {
     public class Token
     {
-        public string? Value { get; set; }
-        public string? Code { get; set; }
+        public string Value { get; set; } = null!;
+        public byte Code { get; set; }
     }
 }

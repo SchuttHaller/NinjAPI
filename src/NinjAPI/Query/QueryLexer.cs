@@ -32,7 +32,7 @@ namespace NinjAPI.Query
             if (string.IsNullOrWhiteSpace(_query)) yield break;
             bool inString = false;
             int queryLength = _query.Length;
-            StringBuilder tokenBuilder = new StringBuilder();
+            StringBuilder tokenBuilder = new();
     
             for (int i = 0; i < queryLength; i++)
             {
@@ -59,14 +59,14 @@ namespace NinjAPI.Query
                 {
                     if (tokenBuilder.Length > 0)
                     {
-                        yield return GetToken(tokenBuilder.ToString());
+                        yield return GetToken(tokenBuilder.ToString())!;
                         tokenBuilder = tokenBuilder.Remove(0, tokenBuilder.Length);
                     }
                 }
 
                 if (IsDelimiter(currentChar) && !inString)
                 {
-                    yield return new() { Code = currentChar.ToString(), Value = currentChar.ToString() };
+                    yield return new() { Code = MapDelimiter(currentChar), Value = currentChar.ToString() };
                 }
 
                 if (!IsDelimiter(currentChar) && currentChar != Delimiter.Space && currentChar != Delimiter.NullChar)
@@ -78,7 +78,7 @@ namespace NinjAPI.Query
             yield return token;
         }
 
-        public Token GetToken(string current)
+        public Token? GetToken(string current)
         {
             if (string.IsNullOrWhiteSpace(current)) return null;
             if (_flag == FlagType.Identifier)
@@ -107,6 +107,7 @@ namespace NinjAPI.Query
             _flag = FlagType.Logical;
             return new() { Code = TokenType.Constant, Value = current };
         }
+
         private enum FlagType
         {
             Identifier,
@@ -116,10 +117,22 @@ namespace NinjAPI.Query
 
         }
 
+        private static byte MapDelimiter(char delimiter)
+        {
+            switch(delimiter)
+            {
+                case Delimiter.LeftParenthesis: return TokenType.LeftParenthesis; 
+                case Delimiter.RightParenthesis: return TokenType.RigthParenthesis;
+                case Delimiter.LeftBracket: return TokenType.LeftBracket;
+                case Delimiter.RightBracket: return TokenType.RigthBracket;
+                default: return TokenType.EndOfLine;
+            }
+        }
+
         private static class TokenCollections
         {
             public static readonly ReadOnlyCollection<string> LogicalOperators = new(new string[] { LogicalOperator.AND, LogicalOperator.OR });
-            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { Delimiter.OpenParent, Delimiter.CloseParent });
+            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { Delimiter.LeftParenthesis, Delimiter.RightParenthesis });
             public static readonly ReadOnlyCollection<string> ComparisionOperators = new(new string[] { ComparisionOperator.Equal, ComparisionOperator.NotEqual, ComparisionOperator.GreaterThan, ComparisionOperator.GreaterOrEqual, ComparisionOperator.LessThan, ComparisionOperator.LessOrEqual, ComparisionOperator.Like, ComparisionOperator.StartsWith, ComparisionOperator.EndsWith });
         }
     }

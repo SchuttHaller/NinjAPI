@@ -8,12 +8,14 @@ namespace NinjAPI.Expressions
 {
     public static class Delimiter
     {
-        public static readonly char OpenParent = '(';
-        public static readonly char CloseParent = ')';
-        public static readonly char SingleQuote = '\'';
-        public static readonly char DoubleQuote = '\"';
-        public static readonly char Space = ' ';
-        public static readonly char Backslash = '\\';
-        public static readonly char NullChar = '\0';
+        public const char LeftParenthesis = '(';
+        public const char RightParenthesis = ')'; 
+        public const char LeftBracket = '[';
+        public const char RightBracket = ']';
+        public const char SingleQuote = '\'';
+        public const char DoubleQuote = '\"';
+        public const char Space = ' ';
+        public const char Backslash = '\\';
+        public const char NullChar = '\0';
     }
 }
