@@ -19,7 +19,7 @@ namespace NinjAPI.Query
 
         public QueryLexer(string query) 
         {
-            if (query is null)  _query = string.Empty;
+            if (query is null) query = string.Empty;
             _query = query!.ToUpper();
         }
 
@@ -99,7 +99,7 @@ namespace NinjAPI.Query
             {
                 if (!TokenCollections.ComparisionOperators.Contains(current))
                     throw new NotSupportedException($"Unexpected token {current} in position {GetErrorPosition(current)}");
-                _flag = FlagType.Constant;
+                _flag = current == ComparisionOperator.Any || current == ComparisionOperator.All ? FlagType.Identifier  : FlagType.Constant;
                 return new() { Code = TokenType.ComparisionOperator, Value = current };
             }
 
@@ -132,8 +132,8 @@ namespace NinjAPI.Query
         private static class TokenCollections
         {
             public static readonly ReadOnlyCollection<string> LogicalOperators = new(new string[] { LogicalOperator.AND, LogicalOperator.OR });
-            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { Delimiter.LeftParenthesis, Delimiter.RightParenthesis });
-            public static readonly ReadOnlyCollection<string> ComparisionOperators = new(new string[] { ComparisionOperator.Equal, ComparisionOperator.NotEqual, ComparisionOperator.GreaterThan, ComparisionOperator.GreaterOrEqual, ComparisionOperator.LessThan, ComparisionOperator.LessOrEqual, ComparisionOperator.Like, ComparisionOperator.StartsWith, ComparisionOperator.EndsWith });
+            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { Delimiter.LeftParenthesis, Delimiter.RightParenthesis, Delimiter.LeftBracket, Delimiter.RightBracket });
+            public static readonly ReadOnlyCollection<string> ComparisionOperators = new(new string[] { ComparisionOperator.Equal, ComparisionOperator.NotEqual, ComparisionOperator.GreaterThan, ComparisionOperator.GreaterOrEqual, ComparisionOperator.LessThan, ComparisionOperator.LessOrEqual, ComparisionOperator.Like, ComparisionOperator.StartsWith, ComparisionOperator.EndsWith, ComparisionOperator.All, ComparisionOperator.Any });
         }
     }
 }

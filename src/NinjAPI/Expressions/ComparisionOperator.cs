@@ -17,5 +17,7 @@ namespace NinjAPI.Expressions
         public const string Like = "LK";
         public const string StartsWith = "SW";
         public const string EndsWith = "EW";
+        public const string Any = "ANY";
+        public const string All = "ALL";
     }
 }

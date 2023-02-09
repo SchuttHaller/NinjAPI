@@ -82,6 +82,23 @@ namespace NinjAPI.Tests.Query
         }
 
         [TestMethod]
+        [DataRow("students [ all ( score gt 6 ) ]", 9, 2, 2,  1, 0, 4)]
+        [DataRow("grade eq 2 and students [ all ( score gt 6 )]", 13, 3, 3, 2, 1, 4)]
+        [DataRow("grade eq 2 and students [ any ( score lt 6 or absence eq 5 ) ]", 17, 4, 4, 3, 2, 4)]
+        public void WhenQueryHasChildrenReferenceReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals, int expectedDelimiters)
+        {
+            var queryAnalyzer = new QueryLexer(query);
+            var result = queryAnalyzer.GetTokens().ToList();
+
+            Assert.AreEqual(expectedCount, result.Count());
+            Assert.AreEqual(expectedIdentifiers, result.IdentifierCount());
+            Assert.AreEqual(expectedOperators, result.ComparisionOperatorCount());
+            Assert.AreEqual(expectedLiterals, result.ConstantCount());
+            Assert.AreEqual(expectedLogicals, result.LogicalOperatorCount());
+            Assert.AreEqual(expectedDelimiters, result.DelimiterCount());
+        }
+
+        [TestMethod]
         [DataRow("id test")]
         [DataRow("id eq test and test test")]
         [DataRow("itest test testttt")]
