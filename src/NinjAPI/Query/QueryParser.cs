@@ -119,7 +119,7 @@ namespace NinjAPI.Query
             {
                 TokenType.Function,
                 new() {
-                    { TokenType.QuantifierFunctionSome, new byte[] { TokenType.QuantifierFunctionSome, TokenType.LeftParenthesis, TokenType.NullableExpression, TokenType.RigthParenthesis, TokenType.RigthBracket } },
+                    { TokenType.QuantifierFunctionAny, new byte[] { TokenType.QuantifierFunctionAny, TokenType.LeftParenthesis, TokenType.NullableExpression, TokenType.RigthParenthesis, TokenType.RigthBracket } },
                     { TokenType.QuantifierFunctionAll, new byte[] { TokenType.QuantifierFunctionAll, TokenType.LeftParenthesis, TokenType.Expression, TokenType.RigthParenthesis, TokenType.RigthBracket } },
                     { TokenType.MathFunction, new byte[] { TokenType.MathFunction, TokenType.LeftParenthesis, TokenType.NullableIdentifier, TokenType.RigthParenthesis, TokenType.RigthBracket, TokenType.ComparisionOperator, TokenType.Constant } },
                     { TokenType.ElementFunction, new byte[] { TokenType.ElementFunction, TokenType.LeftParenthesis, TokenType.NullableExpression, TokenType.RigthParenthesis, TokenType.RigthBracket, TokenType.ComparisionOperator, TokenType.Constant } }

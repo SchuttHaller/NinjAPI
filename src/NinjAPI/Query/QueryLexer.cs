@@ -16,28 +16,21 @@ namespace NinjAPI.Query
     public class QueryLexer
     {
         private readonly string _query;
-        private FlagType _flag = FlagType.Identifier;     
-
+        private bool isConstant = false;
+        private readonly QueryToken EndOfLine = new() { Type = TokenType.EndOfLine, Value = "$" };
         public QueryLexer(string query) 
         {
             query ??= string.Empty;
             _query = query!.ToLower();
         }
+        private static bool IsDelimiter(char delimiter) => TokenCollections.Delimiters.Contains(delimiter);
 
         public List<QueryToken> GetTokens()
         {
-            var tokens = GenerateTokens().ToList();
-            tokens.Add(new QueryToken() { Type = TokenType.EndOfLine, Value = "$" });
-            return tokens;
-        }
+            if (string.IsNullOrWhiteSpace(_query)) return new List<QueryToken> { EndOfLine };
 
-        private static bool IsDelimiter(char delimiter) => TokenCollections.Delimiters.Contains(delimiter);
+            var tokens = new List<QueryToken>();
 
-        private int GetErrorPosition(string current) => _query.IndexOf(current);
-
-        private IEnumerable<QueryToken> GenerateTokens()
-        {
-            if (string.IsNullOrWhiteSpace(_query)) yield break;
             bool inString = false;
             int queryLength = _query.Length;
             StringBuilder tokenBuilder = new();
@@ -67,53 +60,59 @@ namespace NinjAPI.Query
                 {
                     if (tokenBuilder.Length > 0)
                     {
-                        yield return GetNextToken(tokenBuilder.ToString())!;
+                        tokens.Add(GetNextToken(tokenBuilder.ToString())!);
                         tokenBuilder = tokenBuilder.Remove(0, tokenBuilder.Length);
                     }
                 }
 
                 if (IsDelimiter(currentChar) && !inString)
                 {
-                    yield return new() { Type = MapDelimiter(currentChar), Value = currentChar.ToString() };
+                    tokens.Add(new() { Type = MapDelimiter(currentChar), Value = currentChar.ToString() });
                 }
 
                 if (!IsDelimiter(currentChar) && currentChar != D.Space && currentChar != D.NullChar)
                     tokenBuilder = tokenBuilder.Append(currentChar);
 
             }
-            var token = GetNextToken(tokenBuilder.ToString());
-            if (token == null) yield break;
-            yield return token;
+            if (tokenBuilder.Length > 0)
+                tokens.Add(GetNextToken(tokenBuilder.ToString())!);
+            tokens.Add(EndOfLine);
+            return tokens;
         }
 
         private QueryToken? GetNextToken(string current)
         {
             if (string.IsNullOrWhiteSpace(current)) return null;
-            if (_flag == FlagType.Identifier)
-            {
-                _flag = FlagType.Operator;
-                return new() { Type = TokenType.Identifier, Value = current };
-            }
-            if (_flag == FlagType.Logical)
-            {
-                var logicalOperator = TokenCollections.LogicalOperators.FirstOrDefault(w => current == w);
-                if (logicalOperator == null)
-                    throw new NotSupportedException($"Unexpected token {current} in position {GetErrorPosition(_query)}");
 
-                _flag = FlagType.Identifier;
-                return new() { Type = TokenType.LogicalOperator, Value = current };
-            }
-            if (_flag == FlagType.Operator)
+            if (isConstant)
             {
-                if (!TokenCollections.ComparisionOperators.Contains(current))
-                    throw new NotSupportedException($"Unexpected token {current} in position {GetErrorPosition(current)}");
-                _flag = current == Operators.Any || current == Operators.All ? FlagType.Identifier  : FlagType.Constant;
+                isConstant = false;
+                return new() { Type = TokenType.Constant, Value = current };
+            }
+
+            if (TokenCollections.LogicalOperators.Contains(current)) return new() { Type = TokenType.LogicalOperator, Value = current };
+
+            if (TokenCollections.ElementFunctions.Contains(current)) return new() { Type = TokenType.ElementFunction, Value = current };
+
+            if (TokenCollections.MathFunctions.Contains(current)) return new() { Type = TokenType.MathFunction, Value = current };
+
+            if (TokenCollections.SortingOperators.Contains(current)) return new() { Type = TokenType.SortingOperator, Value = current };
+
+            if (TokenCollections.QuantifierOperators.Contains(current))
+            {
+                var type = current == O.All ? TokenType.QuantifierFunctionAll : TokenType.QuantifierFunctionAny;
+                return new() { Type = type, Value = current };
+            }
+
+            if (TokenCollections.ComparisionOperators.Contains(current))
+            {
+                isConstant = true;
                 return new() { Type = TokenType.ComparisionOperator, Value = current };
             }
 
-            //constant default
-            _flag = FlagType.Logical;
-            return new() { Type = TokenType.Constant, Value = current };
+      
+            //identifier default
+            return new() { Type = TokenType.Identifier, Value = current };
         }
 
         private enum FlagType
@@ -140,8 +139,14 @@ namespace NinjAPI.Query
         private static class TokenCollections
         {
             public static readonly ReadOnlyCollection<string> LogicalOperators = new(new string[] { O.And, O.Or });
-            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { D.LeftParenthesis, D.RightParenthesis, D.LeftBracket, D.RightBracket });
-            public static readonly ReadOnlyCollection<string> ComparisionOperators = new(new string[] { O.Equal, O.NotEqual, O.GreaterThan, O.GreaterOrEqual, O.LessThan, O.LessOrEqual, O.Like, O.StartsWith, O.EndsWith, O.All, O.Any });
+            public static readonly ReadOnlyCollection<string> SortingOperators = new(new string[] { O.Desc, O.Asc });
+            public static readonly ReadOnlyCollection<string> ElementFunctions = new(new string[] { O.First, O.Last });
+            public static readonly ReadOnlyCollection<string> QuantifierOperators = new(new string[] { O.All, O.Any });
+            public static readonly ReadOnlyCollection<string> MathFunctions = new(new string[] { O.Min, O.Max, O.Sum });
+            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { D.LeftParenthesis, D.RightParenthesis, D.LeftBracket, D.RightBracket, D.Comma, D.Dot });
+            public static readonly ReadOnlyCollection<string> ComparisionOperators = new(new string[] { O.Equal, O.NotEqual, O.GreaterThan, O.GreaterOrEqual, O.LessThan, O.LessOrEqual, O.Like, O.StartsWith, O.EndsWith });
+
+
         }
     }
 }

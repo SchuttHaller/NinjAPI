@@ -36,11 +36,11 @@ namespace NinjAPI.Tests.Query
         public void WhenQueryIsSimpleExpressionReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals)
         {
             var queryAnalyzer = new QueryLexer(query);
-            var result = queryAnalyzer.GetTokens().ToList();
+            var result = queryAnalyzer.GetTokens();
 
             Assert.AreEqual(expectedCount, result.Count());
             Assert.AreEqual(expectedIdentifiers, result.IdentifierCount());
-            Assert.AreEqual(expectedOperators, result.ComparisionOperatorCount());
+            Assert.AreEqual(expectedOperators, result.OperatorCount());
             Assert.AreEqual(expectedLiterals, result.ConstantCount());
         }
 
@@ -53,11 +53,11 @@ namespace NinjAPI.Tests.Query
         public void WhenQueryHasLogicalOperatorsReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals)
         {
             var queryAnalyzer = new QueryLexer(query);
-            var result = queryAnalyzer.GetTokens().ToList();
+            var result = queryAnalyzer.GetTokens();
 
             Assert.AreEqual(expectedCount, result.Count());
             Assert.AreEqual(expectedIdentifiers, result.IdentifierCount());
-            Assert.AreEqual(expectedOperators, result.ComparisionOperatorCount());
+            Assert.AreEqual(expectedOperators, result.OperatorCount());
             Assert.AreEqual(expectedLiterals, result.ConstantCount());
             Assert.AreEqual(expectedLogicals, result.LogicalOperatorCount());
         }
@@ -67,15 +67,15 @@ namespace NinjAPI.Tests.Query
         [DataRow("(((()))id eq 1 and revenue eq null or revenue eq 0", 19, 3, 3, 3, 2, 8)]
         [DataRow("(id lk test001 or id lk test222 or))(() createddate gt 23/11/12 and revenue eq 0", 22, 4, 4, 4, 3, 7)]
         [DataRow("(id lk test001 or id lk test222) or ((createddate gt 23/11/12 and revenue eq 0) and resultdate eq 23/11/12)", 26, 5, 5, 5, 4, 7)]
-        [DataRow("(description lk 'jimmy's test') or desc lk test", 10, 2, 2, 2, 1, 3)]
+        [DataRow("(description lk 'jimmy's test') or descr lk test", 10, 2, 2, 2, 1, 3)]
         public void WhenQueryHasDelimitersReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals, int expectedDelimiters)
         {
             var queryAnalyzer = new QueryLexer(query);
-            var result = queryAnalyzer.GetTokens().ToList();
+            var result = queryAnalyzer.GetTokens();
 
             Assert.AreEqual(expectedCount, result.Count());
             Assert.AreEqual(expectedIdentifiers, result.IdentifierCount());
-            Assert.AreEqual(expectedOperators, result.ComparisionOperatorCount());
+            Assert.AreEqual(expectedOperators, result.OperatorCount());
             Assert.AreEqual(expectedLiterals, result.ConstantCount());
             Assert.AreEqual(expectedLogicals, result.LogicalOperatorCount());
             Assert.AreEqual(expectedDelimiters, result.DelimiterCount());
@@ -83,31 +83,35 @@ namespace NinjAPI.Tests.Query
 
         [TestMethod]
         [DataRow("students [ all ( score gt 6 ) ]", 10, 2, 2,  1, 0, 5)]
+        [DataRow("students [ first() ].id eq 10", 11, 2, 2, 1, 0, 6)]
         [DataRow("grade eq 2 and students [ all ( score gt 6 )]", 14, 3, 3, 2, 1, 5)]
         [DataRow("grade eq 2 and students [ any ( score lt 6 or absence eq 5 ) ]", 18, 4, 4, 3, 2, 5)]
+        [DataRow("date gt 2012-01-01 and products[first()].price gt 10 or products[max(price)] gt 100", 25, 5, 5, 3, 2, 10)]
+        [DataRow("date gt 2012-01-01 and products[first()].price gt 10 or products[max(price)] gt 100 and products[all(price gt 100)]", 35, 7, 7, 4, 3, 14)]
         public void WhenQueryHasChildrenReferenceReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals, int expectedDelimiters)
         {
             var queryAnalyzer = new QueryLexer(query);
-            var result = queryAnalyzer.GetTokens().ToList();
+            var result = queryAnalyzer.GetTokens();
 
             Assert.AreEqual(expectedCount, result.Count());
             Assert.AreEqual(expectedIdentifiers, result.IdentifierCount());
-            Assert.AreEqual(expectedOperators, result.ComparisionOperatorCount());
+            Assert.AreEqual(expectedOperators, result.OperatorCount());
             Assert.AreEqual(expectedLiterals, result.ConstantCount());
             Assert.AreEqual(expectedLogicals, result.LogicalOperatorCount());
             Assert.AreEqual(expectedDelimiters, result.DelimiterCount());
         }
 
         [TestMethod]
-        [DataRow("id test")]
-        [DataRow("id eq test and test test")]
-        [DataRow("itest test testttt")]
-        [DataRow("ites(((((((((t test testttt")]
-        [DataRow("description lk jimmy's \\\"test\\\"\\\"")]
-        public void WhenQueryIsInvalidThrowsInvalidTypeException(string query)
+        [DataRow("id desc", 3, 1, 1)]
+        [DataRow("id desc, name asc", 6, 2, 2)]
+        public void WhenQueryHasSortingOperatorsReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators)
         {
-            var queryAnalyzer = new QueryLexer(query); 
-            Assert.ThrowsException<NotSupportedException>(() => queryAnalyzer.GetTokens().ToList());
+            var queryAnalyzer = new QueryLexer(query);
+            var result = queryAnalyzer.GetTokens();
+
+            Assert.AreEqual(expectedCount, result.Count());
+            Assert.AreEqual(expectedIdentifiers, result.IdentifierCount());
+            Assert.AreEqual(expectedOperators, result.OperatorCount());
         }
     }
 }

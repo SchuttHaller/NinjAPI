@@ -17,5 +17,7 @@ namespace NinjAPI.Query
         public const char Space = ' ';
         public const char Backslash = '\\';
         public const char NullChar = '\0';
+        public const char Dot = '.';
+        public const char Comma = ',';
     }
 }

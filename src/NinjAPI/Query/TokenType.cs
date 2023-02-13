@@ -26,13 +26,14 @@ namespace NinjAPI.Query
         // Other Terminals
         public const byte LogicalOperator = 11;
         public const byte Identifier = 12;
-        public const byte QuantifierFunctionSome = 13;
+        public const byte QuantifierFunctionAny = 13;
         public const byte QuantifierFunctionAll = 14;
         public const byte ElementFunction = 15;
         public const byte MathFunction = 16;
         public const byte ComparisionOperator = 17;
         public const byte Constant = 18;
         public const byte EndOfLine = 19;
+        public const byte SortingOperator = 20; //TODO: check if needed
 
         public static bool IsTerminal(byte tokenType)
         {

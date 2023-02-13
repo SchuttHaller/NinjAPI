@@ -27,11 +27,18 @@ namespace NinjAPI.Query
         public const string And = "and";
         public const string Or = "or";
 
-        // element operators
+        // math operators
         public const string Min = "min";
         public const string Max = "max";
         public const string Sum = "sum";
+
+        // element operators
         public const string First = "first";
         public const string Last = "last";
+
+
+        // sorting operators
+        public const string Asc = "asc";
+        public const string Desc = "desc";
     }
 }
