@@ -1,5 +1,4 @@
 ﻿using Microsoft.VisualBasic.FileIO;
-using NinjAPI.Expressions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +8,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using O = NinjAPI.Query.Operators;
+using D = NinjAPI.Query.Delimiters;
 
 namespace NinjAPI.Query
 {
@@ -19,15 +20,22 @@ namespace NinjAPI.Query
 
         public QueryLexer(string query) 
         {
-            if (query is null) query = string.Empty;
-            _query = query!.ToUpper();
+            query ??= string.Empty;
+            _query = query!.ToLower();
+        }
+
+        public List<QueryToken> GetTokens()
+        {
+            var tokens = GenerateTokens().ToList();
+            tokens.Add(new QueryToken() { Type = TokenType.EndOfLine, Value = "$" });
+            return tokens;
         }
 
         private static bool IsDelimiter(char delimiter) => TokenCollections.Delimiters.Contains(delimiter);
 
         private int GetErrorPosition(string current) => _query.IndexOf(current);
 
-        public IEnumerable<Token> GetTokens()
+        private IEnumerable<QueryToken> GenerateTokens()
         {
             if (string.IsNullOrWhiteSpace(_query)) yield break;
             bool inString = false;
@@ -37,54 +45,54 @@ namespace NinjAPI.Query
             for (int i = 0; i < queryLength; i++)
             {
                 char currentChar = _query[i];
-                char prevChar = i > 0 ? _query[i - 1] : Delimiter.NullChar;
-                char nextChar = (i + 1 < _query.Length) ? _query[i + 1] : Delimiter.NullChar;
+                char prevChar = i > 0 ? _query[i - 1] : D.NullChar;
+                char nextChar = (i + 1 < _query.Length) ? _query[i + 1] : Delimiters.NullChar;
 
-                if (currentChar == Delimiter.SingleQuote && (prevChar == Delimiter.NullChar || prevChar == Delimiter.Space) && !inString)
+                if (currentChar == D.SingleQuote && (prevChar == D.NullChar || prevChar == D.Space) && !inString)
                 {
                     inString = true;
                     continue;
                 }
-                if (currentChar == Delimiter.Backslash && (nextChar == Delimiter.DoubleQuote || nextChar == Delimiter.SingleQuote))
+                if (currentChar == D.Backslash && (nextChar == D.DoubleQuote || nextChar == D.SingleQuote))
                 {
                     continue;
                 }
-                if (currentChar == Delimiter.SingleQuote && (nextChar == Delimiter.NullChar || nextChar == Delimiter.Space || IsDelimiter(nextChar)) && inString && prevChar != Delimiter.Backslash)
+                if (currentChar == D.SingleQuote && (nextChar == D.NullChar || nextChar == D.Space || IsDelimiter(nextChar)) && inString && prevChar != D.Backslash)
                 {
                     inString = false;
                     continue;
                 }
 
-                if ((currentChar == Delimiter.Space || currentChar == Delimiter.NullChar || IsDelimiter(currentChar)) && !inString)
+                if ((currentChar == D.Space || currentChar == D.NullChar || IsDelimiter(currentChar)) && !inString)
                 {
                     if (tokenBuilder.Length > 0)
                     {
-                        yield return GetToken(tokenBuilder.ToString())!;
+                        yield return GetNextToken(tokenBuilder.ToString())!;
                         tokenBuilder = tokenBuilder.Remove(0, tokenBuilder.Length);
                     }
                 }
 
                 if (IsDelimiter(currentChar) && !inString)
                 {
-                    yield return new() { Code = MapDelimiter(currentChar), Value = currentChar.ToString() };
+                    yield return new() { Type = MapDelimiter(currentChar), Value = currentChar.ToString() };
                 }
 
-                if (!IsDelimiter(currentChar) && currentChar != Delimiter.Space && currentChar != Delimiter.NullChar)
+                if (!IsDelimiter(currentChar) && currentChar != D.Space && currentChar != D.NullChar)
                     tokenBuilder = tokenBuilder.Append(currentChar);
 
             }
-            var token = GetToken(tokenBuilder.ToString());
+            var token = GetNextToken(tokenBuilder.ToString());
             if (token == null) yield break;
             yield return token;
         }
 
-        public Token? GetToken(string current)
+        private QueryToken? GetNextToken(string current)
         {
             if (string.IsNullOrWhiteSpace(current)) return null;
             if (_flag == FlagType.Identifier)
             {
                 _flag = FlagType.Operator;
-                return new() { Code = TokenType.Identifier, Value = current };
+                return new() { Type = TokenType.Identifier, Value = current };
             }
             if (_flag == FlagType.Logical)
             {
@@ -93,19 +101,19 @@ namespace NinjAPI.Query
                     throw new NotSupportedException($"Unexpected token {current} in position {GetErrorPosition(_query)}");
 
                 _flag = FlagType.Identifier;
-                return new() { Code = TokenType.LogicalOperator, Value = current };
+                return new() { Type = TokenType.LogicalOperator, Value = current };
             }
             if (_flag == FlagType.Operator)
             {
                 if (!TokenCollections.ComparisionOperators.Contains(current))
                     throw new NotSupportedException($"Unexpected token {current} in position {GetErrorPosition(current)}");
-                _flag = current == ComparisionOperator.Any || current == ComparisionOperator.All ? FlagType.Identifier  : FlagType.Constant;
-                return new() { Code = TokenType.ComparisionOperator, Value = current };
+                _flag = current == Operators.Any || current == Operators.All ? FlagType.Identifier  : FlagType.Constant;
+                return new() { Type = TokenType.ComparisionOperator, Value = current };
             }
 
             //constant default
             _flag = FlagType.Logical;
-            return new() { Code = TokenType.Constant, Value = current };
+            return new() { Type = TokenType.Constant, Value = current };
         }
 
         private enum FlagType
@@ -119,21 +127,21 @@ namespace NinjAPI.Query
 
         private static byte MapDelimiter(char delimiter)
         {
-            switch(delimiter)
+            return delimiter switch
             {
-                case Delimiter.LeftParenthesis: return TokenType.LeftParenthesis; 
-                case Delimiter.RightParenthesis: return TokenType.RigthParenthesis;
-                case Delimiter.LeftBracket: return TokenType.LeftBracket;
-                case Delimiter.RightBracket: return TokenType.RigthBracket;
-                default: return TokenType.EndOfLine;
-            }
+                D.LeftParenthesis => TokenType.LeftParenthesis,
+                D.RightParenthesis => TokenType.RigthParenthesis,
+                D.LeftBracket => TokenType.LeftBracket,
+                D.RightBracket => TokenType.RigthBracket,
+                _ => TokenType.EndOfLine,
+            };
         }
 
         private static class TokenCollections
         {
-            public static readonly ReadOnlyCollection<string> LogicalOperators = new(new string[] { LogicalOperator.AND, LogicalOperator.OR });
-            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { Delimiter.LeftParenthesis, Delimiter.RightParenthesis, Delimiter.LeftBracket, Delimiter.RightBracket });
-            public static readonly ReadOnlyCollection<string> ComparisionOperators = new(new string[] { ComparisionOperator.Equal, ComparisionOperator.NotEqual, ComparisionOperator.GreaterThan, ComparisionOperator.GreaterOrEqual, ComparisionOperator.LessThan, ComparisionOperator.LessOrEqual, ComparisionOperator.Like, ComparisionOperator.StartsWith, ComparisionOperator.EndsWith, ComparisionOperator.All, ComparisionOperator.Any });
+            public static readonly ReadOnlyCollection<string> LogicalOperators = new(new string[] { O.And, O.Or });
+            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { D.LeftParenthesis, D.RightParenthesis, D.LeftBracket, D.RightBracket });
+            public static readonly ReadOnlyCollection<string> ComparisionOperators = new(new string[] { O.Equal, O.NotEqual, O.GreaterThan, O.GreaterOrEqual, O.LessThan, O.LessOrEqual, O.Like, O.StartsWith, O.EndsWith, O.All, O.Any });
         }
     }
 }

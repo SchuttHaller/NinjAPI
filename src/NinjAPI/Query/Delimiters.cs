@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NinjAPI.Expressions
+namespace NinjAPI.Query
 {
-    public static class Delimiter
+    public static class Delimiters
     {
         public const char LeftParenthesis = '(';
-        public const char RightParenthesis = ')'; 
+        public const char RightParenthesis = ')';
         public const char LeftBracket = '[';
         public const char RightBracket = ']';
         public const char SingleQuote = '\'';

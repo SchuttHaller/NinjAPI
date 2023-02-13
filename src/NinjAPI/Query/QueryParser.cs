@@ -3,6 +3,7 @@ using NinjAPI.Expressions;
 using NinjAPI.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
@@ -10,92 +11,82 @@ using System.Threading.Tasks;
 
 namespace NinjAPI.Query
 {
-    public class QueryParser<TEntity> where TEntity : class
-    {       
-
-        private readonly List<Token> _tokens;
-
-        public Expression? FilterExpression { get; private set; }
-
-        public bool IsValid { get; private set; }
-
-        public QueryParser(IEnumerable<Token> _tokens) 
+    public static class QueryParser
+    {               
+        public static QueryNode Parse(this List<QueryToken> tokens)
         {
-            this._tokens = _tokens.ToList();
-            this._tokens.Add(new Token() { Code = TokenType.EndOfLine, Value = "$" });
+            tokens = tokens ?? throw new ArgumentNullException(nameof(tokens));
 
-            try
-            {
-                this.Parse();
-            }
-            catch(Exception ex)
-            {
-                IsValid = false;
-            }
-        }
-
-        private void Parse()
-        {
             // init the transition stack
             Stack<byte> transitionStack = new();
-            transitionStack.PushRange(TokenType.Start);
+            transitionStack.PushRange(TokenType.EndOfLine, TokenType.Expression);
+
+            // init the tree stack
+            Stack<QueryNode> treeStack = new();
+            QueryNode root = new (TokenType.Expression);
+            treeStack.Push(root);
 
 
             int i = 0;
-            byte tToken; // transition token
-            Token token;
+            byte top; // transition token
+            QueryToken next;
+            QueryNode node; // start the node with the root
 
             do
             {
-                tToken = transitionStack.Pop();
-                token = _tokens[i];
+                top = transitionStack.Pop();
+                next = tokens[i];
 
-                if (TokenType.IsTerminal(tToken))
+                if (TokenType.IsTerminal(top))
                 {
-                    if (tToken == token.Code) i++;
-                    else throw new Exception($"Unexpected token {token}");
+                    // if top of the stack is a terminar and the next token doesn't match it
+                    // it's an error
+                    if(top != next.Type)
+                        throw new Exception($"Unexpected token {next.Value}");
+
+                    // is the token matches, then consume the input
+                    i++;
+                    var terminalNode = treeStack.Pop();
+                    terminalNode.Token = next;
+                    continue;
                 }
-                else
+
+                // if transition table doesn't contain a valid transition for the non-terminal token
+                // it's a syntanx error
+                if (!_transitionTable[top].ContainsKey(next.Type))
                 {
-                    if (_transitionTable[tToken].TryGetValue(token.Code, out var production))
-                    {
-                        if(production.Length > 0)
-                        {
-                            transitionStack.PushRange(production.Reverse());
-                        }
-                    }
-                    else
-                    {
-                        throw new Exception($"Syntax error: Unexpected token '{token.Value}'");
-                    } 
+                    throw new Exception($"Syntax error: Unexpected token '{next.Value}'");
                 }
+
+                // get next production for the non-terminal
+                var production = _transitionTable[top][next.Type];
+                
+                if (production.Any())
+                {
+                    // expand the transition stack
+                    transitionStack.PushRange(production.Reverse());
+
+                    node = treeStack.Pop();
+                    // create nodes based on production
+                    var newNodes = production
+                        .Select(t => new QueryNode(t, node))
+                        .ToArray();
+                    // expand the tree stack
+                    treeStack.PushRange(newNodes.Reverse());
+                }               
 
             }
-            while (tToken != TokenType.EndOfLine);
+            while (top != TokenType.EndOfLine);
 
-            IsValid = true;
+            return root;
         }
 
 
         /// <summary>
         /// Grammar Transition Table:
-        ///|        |   $       |   L       |   I       |   (       |   )   |   O       |   C   |   [       |   A   |   ]   |
-        ///|:---:   |:---:      |:---:      |:---:      |:---:      |:---:  |:---:      |:---:  |:---:      |:---:  |:---:  |
-        ///|    S   |           |           |S::= E $   |S::= E $   |       |           |       |           |       |       |
-        ///|    E   |           |           |E::= K EP  |E::= K EP  |       |           |       |           |       |       |
-        ///|    EP  |EP::= ε    |EP::= L E  |           |           |EP::= ε|           |       |           |       |       |
-        ///|    K   |           |           |K::= I KP  |K::= (E )  |       |           |       |           |       |       |
-        ///|    KP  |           |           |           |           |       |KP::= O C  |       |KP::=[A(E)]|       |       |
         /// </summary>
         private static readonly Dictionary<byte, Dictionary<byte, byte[]>> _transitionTable = new()
         {
-            {
-                TokenType.Start,
-                new() {
-                    { TokenType.LeftParenthesis, new byte[] { TokenType.Expression, TokenType.EndOfLine } },
-                    { TokenType.Identifier, new byte[] { TokenType.Expression, TokenType.EndOfLine } }
-                }
-            },
             {
                 TokenType.Expression,
                 new() {
@@ -121,8 +112,32 @@ namespace NinjAPI.Query
             {
                 TokenType.ClausePredicate,
                 new() {
-                    { TokenType.LeftBracket, new byte[] { TokenType.LeftBracket, TokenType.ScalarFunction, TokenType.LeftParenthesis, TokenType.Expression, TokenType.RigthParenthesis, TokenType.RigthBracket } },
+                    { TokenType.LeftBracket, new byte[] { TokenType.LeftBracket, TokenType.Function } },
                     { TokenType.ComparisionOperator,new byte[] { TokenType.ComparisionOperator, TokenType.Constant } }
+                }
+            },
+            {
+                TokenType.Function,
+                new() {
+                    { TokenType.QuantifierFunctionSome, new byte[] { TokenType.QuantifierFunctionSome, TokenType.LeftParenthesis, TokenType.NullableExpression, TokenType.RigthParenthesis, TokenType.RigthBracket } },
+                    { TokenType.QuantifierFunctionAll, new byte[] { TokenType.QuantifierFunctionAll, TokenType.LeftParenthesis, TokenType.Expression, TokenType.RigthParenthesis, TokenType.RigthBracket } },
+                    { TokenType.MathFunction, new byte[] { TokenType.MathFunction, TokenType.LeftParenthesis, TokenType.NullableIdentifier, TokenType.RigthParenthesis, TokenType.RigthBracket, TokenType.ComparisionOperator, TokenType.Constant } },
+                    { TokenType.ElementFunction, new byte[] { TokenType.ElementFunction, TokenType.LeftParenthesis, TokenType.NullableExpression, TokenType.RigthParenthesis, TokenType.RigthBracket, TokenType.ComparisionOperator, TokenType.Constant } }
+                }
+            },
+            {
+                TokenType.NullableExpression,
+                new() {
+                    { TokenType.Identifier, new byte[] { TokenType.Expression } },
+                    { TokenType.LeftParenthesis, new byte[] { TokenType.Expression } },
+                    { TokenType.RigthParenthesis,  Array.Empty<byte>() }
+                }
+            },
+            {
+                TokenType.NullableIdentifier,
+                new() {
+                    { TokenType.Identifier, new byte[] { TokenType.Identifier } },
+                    { TokenType.RigthParenthesis,  Array.Empty<byte>() }
                 }
             }
         };

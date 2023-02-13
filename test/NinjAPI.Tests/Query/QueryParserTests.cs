@@ -27,13 +27,13 @@ namespace NinjAPI.Tests.Query
         }
 
         [TestMethod]
-        public void ValidQuery_IsValid()
+        public void ValidQuery_ReturnsTree()
         {
            foreach(var query in _validQueries)
             {
                 var tokens = new QueryLexer(query.str).GetTokens();
-                var parser = new QueryParser<MockEntity>(tokens);
-                Assert.IsTrue(parser.IsValid);
+                var tree = QueryParser.Parse(tokens);
+                Assert.IsNotNull(tree);
             }
         }
 
