@@ -27,12 +27,12 @@ namespace NinjAPI.Tests.Query
 
         [TestMethod]
         [DataRow("id eq 1", 4, 1, 1, 1)]
-        [DataRow("name lk 'felipe'", 4, 1, 1, 1)]
+        [DataRow("name lk 'felipe'", 6, 1, 1, 1)]
         [DataRow("revenue gt 100", 4, 1, 1, 1)]
         [DataRow("revenue lt 200", 4, 1, 1, 1)]
         [DataRow("total eq 500", 4, 1, 1, 1)]
-        [DataRow("description lk 'jimmy's test'", 4, 1, 1, 1)]
-        [DataRow("description lk 'jimmy's \\\"test\\\"'", 4, 1, 1, 1)]
+        [DataRow("description lk 'jimmy's test'", 6, 1, 1, 1)]
+        [DataRow("description lk 'jimmy's \\\"test\\\"'", 6, 1, 1, 1)]
         public void WhenQueryIsSimpleExpressionReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals)
         {
             var queryAnalyzer = new QueryLexer(query);
@@ -47,9 +47,9 @@ namespace NinjAPI.Tests.Query
         [TestMethod]
         [DataRow("id eq 1 and resultdate eq null", 8, 2, 2, 2, 1)]
         [DataRow("id eq 1 and revenue eq null or revenue eq 0", 12, 3, 3, 3, 2)]
-        [DataRow("(name lk felipe') or lastname lk 'duarte'", 10, 2, 2, 2, 1)]
+        [DataRow("(name lk felipe') or lastname lk 'duarte'", 13, 2, 2, 2, 1)]
         [DataRow("id lk test001 or id lk test222 or createddate gt 23/11/12 and revenue eq 0", 16, 4, 4, 4, 3)]
-        [DataRow("description lk 'jimmy's \\\"test\\\"' or description lk 'pepe's test'", 8, 2, 2, 2, 1)]
+        [DataRow("description lk 'jimmy's \\\"test\\\"' or description lk 'pepe's test'", 12, 2, 2, 2, 1)]
         public void WhenQueryHasLogicalOperatorsReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals)
         {
             var queryAnalyzer = new QueryLexer(query);
@@ -67,7 +67,7 @@ namespace NinjAPI.Tests.Query
         [DataRow("(((()))id eq 1 and revenue eq null or revenue eq 0", 19, 3, 3, 3, 2, 8)]
         [DataRow("(id lk test001 or id lk test222 or))(() createddate gt 23/11/12 and revenue eq 0", 22, 4, 4, 4, 3, 7)]
         [DataRow("(id lk test001 or id lk test222) or ((createddate gt 23/11/12 and revenue eq 0) and resultdate eq 23/11/12)", 26, 5, 5, 5, 4, 7)]
-        [DataRow("(description lk 'jimmy's test') or descr lk test", 10, 2, 2, 2, 1, 3)]
+        [DataRow("(description lk 'jimmy's test') or descr lk test", 12, 2, 2, 2, 1, 3)]
         public void WhenQueryHasDelimitersReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals, int expectedDelimiters)
         {
             var queryAnalyzer = new QueryLexer(query);
@@ -100,6 +100,23 @@ namespace NinjAPI.Tests.Query
             Assert.AreEqual(expectedLogicals, result.LogicalOperatorCount());
             Assert.AreEqual(expectedDelimiters, result.DelimiterCount());
         }
+
+        [TestMethod]
+        [DataRow("description eq 'null", 5, 1, 0)]
+        [DataRow("description eq null'", 5, 1, 1)]
+        [DataRow("description eq null", 4, 1, 1)]
+        [DataRow("description ne null and description lk 'null'", 10, 2, 1)]
+        [DataRow("(description ne null and description lk 'null') or id ne null", 16, 3, 2)]
+        public void whenQueryHasNullConstantsReturnsTable(string query, int expectedCount, int expectedLiterals, int expectedNullValues)
+        {
+            var queryAnalyzer = new QueryLexer(query);
+            var result = queryAnalyzer.GetTokens();
+
+            Assert.AreEqual(expectedCount, result.Count());
+            Assert.AreEqual(expectedLiterals, result.ConstantCount());
+            Assert.AreEqual(expectedNullValues, result.NullCount());
+        }
+
 
         [TestMethod]
         [DataRow("id desc", 3, 1, 1)]

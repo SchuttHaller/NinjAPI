@@ -22,6 +22,7 @@ namespace NinjAPI.Query
         RigthParenthesis,
         LeftBracket,
         RigthBracket,
+        SingleQuote,
 
     // Other Terminals
         LogicalOperator,
@@ -32,6 +33,7 @@ namespace NinjAPI.Query
         MathFunction,
         ComparisionOperator,
         Constant,
+        NullValue,
         EndOfLine,
         SortingOperator //TODO: check if needed
     }

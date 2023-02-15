@@ -18,6 +18,7 @@ namespace NinjAPI.Query
         private readonly string _query;
         private bool isConstant = false;
         private readonly QueryToken EndOfLine = new() { Type = TokenType.EndOfLine, Value = "$" };
+        private readonly QueryToken SingleQuote = new() { Type = TokenType.SingleQuote, Value = D.SingleQuote.ToString() };
         public QueryLexer(string query) 
         {
             query ??= string.Empty;
@@ -44,6 +45,7 @@ namespace NinjAPI.Query
                 if (currentChar == D.SingleQuote && (prevChar == D.NullChar || prevChar == D.Space) && !inString)
                 {
                     inString = true;
+                    tokens.Add(SingleQuote);
                     continue;
                 }
                 if (currentChar == D.Backslash && (nextChar == D.DoubleQuote || nextChar == D.SingleQuote))
@@ -53,6 +55,7 @@ namespace NinjAPI.Query
                 if (currentChar == D.SingleQuote && (nextChar == D.NullChar || nextChar == D.Space || IsDelimiter(nextChar)) && inString && prevChar != D.Backslash)
                 {
                     inString = false;
+                    tokens.Add(SingleQuote);
                     continue;
                 }
 
@@ -60,7 +63,7 @@ namespace NinjAPI.Query
                 {
                     if (tokenBuilder.Length > 0)
                     {
-                        tokens.Add(GetNextToken(tokenBuilder.ToString())!);
+                        tokens.Add(GetNextToken(tokenBuilder.ToString(), tokens.LastOrDefault())!);
                         tokenBuilder = tokenBuilder.Remove(0, tokenBuilder.Length);
                     }
                 }
@@ -75,19 +78,20 @@ namespace NinjAPI.Query
 
             }
             if (tokenBuilder.Length > 0)
-                tokens.Add(GetNextToken(tokenBuilder.ToString())!);
+                tokens.Add(GetNextToken(tokenBuilder.ToString(), tokens.Last())!);
             tokens.Add(EndOfLine);
             return tokens;
         }
 
-        private QueryToken? GetNextToken(string current)
+        private QueryToken? GetNextToken(string current, QueryToken last)
         {
             if (string.IsNullOrWhiteSpace(current)) return null;
 
             if (isConstant)
             {
                 isConstant = false;
-                return new() { Type = TokenType.Constant, Value = current };
+                var type = current == "null" && last.Value != D.SingleQuote.ToString() ? TokenType.NullValue : TokenType.Constant;
+                return new() { Type = type, Value = current };
             }
 
             if (TokenCollections.LogicalOperators.Contains(current)) return new() { Type = TokenType.LogicalOperator, Value = current };
@@ -143,7 +147,7 @@ namespace NinjAPI.Query
             public static readonly ReadOnlyCollection<string> ElementFunctions = new(new string[] { O.First, O.Last });
             public static readonly ReadOnlyCollection<string> QuantifierOperators = new(new string[] { O.All, O.Any });
             public static readonly ReadOnlyCollection<string> MathFunctions = new(new string[] { O.Min, O.Max, O.Sum });
-            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { D.LeftParenthesis, D.RightParenthesis, D.LeftBracket, D.RightBracket, D.Comma, D.Dot });
+            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { D.LeftParenthesis, D.RightParenthesis, D.LeftBracket, D.RightBracket, D.Comma, D.Dot, D.SingleQuote });
             public static readonly ReadOnlyCollection<string> ComparisionOperators = new(new string[] { O.Equal, O.NotEqual, O.GreaterThan, O.GreaterOrEqual, O.LessThan, O.LessOrEqual, O.Like, O.StartsWith, O.EndsWith });
 
 
