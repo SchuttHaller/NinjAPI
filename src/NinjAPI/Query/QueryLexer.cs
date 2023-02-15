@@ -124,7 +124,7 @@ namespace NinjAPI.Query
 
         }
 
-        private static byte MapDelimiter(char delimiter)
+        private static TokenType MapDelimiter(char delimiter)
         {
             return delimiter switch
             {

@@ -9,6 +9,7 @@ namespace NinjAPI.Query
     public class QueryNode
     {
         public Token Token { get; set; }
+        public TokenType Type => Token.Type; 
         public QueryNode? Parent { get; set; }
         public ICollection<QueryNode> Children { get; set; }
         public bool IsRoot => Parent == null;
@@ -21,7 +22,7 @@ namespace NinjAPI.Query
             Children = new List<QueryNode>();
         }
 
-        public QueryNode(byte tokenType, QueryNode? parent = null)
+        public QueryNode(TokenType tokenType, QueryNode? parent = null)
         {
             Token = Token.New(tokenType);
             Children = new List<QueryNode>();

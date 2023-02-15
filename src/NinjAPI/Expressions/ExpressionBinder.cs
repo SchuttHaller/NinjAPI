@@ -11,22 +11,49 @@ using System.Threading.Tasks;
 
 namespace NinjAPI.Expressions
 {
-    internal abstract class ExpressionBinder<TEntity> where TEntity: class
+    public abstract class ExpressionBinder<TEntity> where TEntity: class
     {
-        protected static Type EntityType => typeof(TEntity);
+        public abstract Expression BindExpression(string expressionStr);
 
-        private static Expression PropertyNavigation(QueryNode node)
+        protected Type EntityType => typeof(TEntity);
+
+        protected Expression ConditionalExpression(Expression left, Expression rigth, QueryToken logicalOperator)
+        {
+            return logicalOperator.Value switch
+            {
+                Operators.And => Expression.AndAlso(left, rigth),
+                Operators.Or => Expression.OrElse(left, rigth),
+                _ => throw new ArgumentException($"Invalid logical operator: {logicalOperator.Value}"),
+            };
+        }
+
+        protected Expression ComparisonExpression(Expression left, Expression rigth, QueryToken comparisonOperator)
+        {
+            return comparisonOperator.Value switch
+            {
+                Operators.Equal => Expression.Equal(left, rigth),
+                Operators.NotEqual => Expression.NotEqual(left, rigth),
+                Operators.GreaterThan => Expression.GreaterThan(left, rigth),
+                Operators.GreaterOrEqual => Expression.GreaterThanOrEqual(left, rigth),
+                Operators.LessThan => Expression.LessThan(left, rigth),
+                Operators.LessOrEqual => Expression.LessThanOrEqual(left, rigth),
+                Operators.Like => Expression.Call(left, left.Type.GetMethod("Contains", new[] { typeof(string)} )!, rigth),
+                Operators.StartsWith => Expression.Call(left, left.Type.GetMethod("StartsWith", new[] { typeof(string) })!, rigth),
+                Operators.EndsWith => Expression.Call(left, left.Type.GetMethod("EndsWith", new[] { typeof(string) })!, rigth),
+                _ => throw new ArgumentException($"Invalid comparison operator: {comparisonOperator.Value}"),
+            };
+        }
+
+        protected Expression PropertyNavigation(QueryNode node, Expression navigationExp)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
             if (node.Token == null) throw new ArgumentNullException(nameof(node.Token));
             if (node.Token is not QueryToken) throw new ArgumentException("token must be a valid identifier", nameof(node.Token));
 
-            var navigationExp = Expression.Parameter(EntityType);
-
             return PropertyNavigation(navigationExp, (node.Token as QueryToken)!.Value);
         }
 
-        private static Expression PropertyNavigation(Expression navigation, string identifier)
+        private Expression PropertyNavigation(Expression navigation, string identifier)
         {
             Type type = navigation.GetExpressionReturnType();
             var idPieces = identifier.Split('.', 2);
