@@ -17,7 +17,7 @@ namespace NinjAPI.Query
     {
         private readonly string _query;
         private bool isConstant = false;
-        private readonly QueryToken EndOfLine = new() { Type = TokenType.EndOfLine, Value = "$" };
+        private readonly QueryToken EndOfLine = new() { Type = TokenType.EndOfLine, Value = D.NullChar.ToString() };
         private readonly QueryToken SingleQuote = new() { Type = TokenType.SingleQuote, Value = D.SingleQuote.ToString() };
         public QueryLexer(string query) 
         {
@@ -55,8 +55,8 @@ namespace NinjAPI.Query
                 if (currentChar == D.SingleQuote && (nextChar == D.NullChar || nextChar == D.Space || IsDelimiter(nextChar)) && inString && prevChar != D.Backslash)
                 {
                     inString = false;
-                    tokens.Add(SingleQuote);
-                    continue;
+                    //tokens.Add(SingleQuote);
+                    //continue;
                 }
 
                 if ((currentChar == D.Space || currentChar == D.NullChar || IsDelimiter(currentChar)) && !inString)
@@ -136,6 +136,9 @@ namespace NinjAPI.Query
                 D.RightParenthesis => TokenType.RigthParenthesis,
                 D.LeftBracket => TokenType.LeftBracket,
                 D.RightBracket => TokenType.RigthBracket,
+                D.SingleQuote => TokenType.SingleQuote,
+                D.Dollar => TokenType.Dollar,
+                D.Comma => TokenType.Comma,
                 _ => TokenType.EndOfLine,
             };
         }
@@ -147,7 +150,7 @@ namespace NinjAPI.Query
             public static readonly ReadOnlyCollection<string> ElementFunctions = new(new string[] { O.First, O.Last });
             public static readonly ReadOnlyCollection<string> QuantifierOperators = new(new string[] { O.All, O.Any });
             public static readonly ReadOnlyCollection<string> MathFunctions = new(new string[] { O.Min, O.Max, O.Sum });
-            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { D.LeftParenthesis, D.RightParenthesis, D.LeftBracket, D.RightBracket, D.Comma, D.Dot, D.SingleQuote });
+            public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { D.LeftParenthesis, D.RightParenthesis, D.LeftBracket, D.RightBracket, D.Comma, D.Dot, D.SingleQuote, D.Dollar });
             public static readonly ReadOnlyCollection<string> ComparisionOperators = new(new string[] { O.Equal, O.NotEqual, O.GreaterThan, O.GreaterOrEqual, O.LessThan, O.LessOrEqual, O.Like, O.StartsWith, O.EndsWith });
 
 

@@ -64,10 +64,13 @@ namespace NinjAPI.Tests.Query
 
         [TestMethod]
         [DataRow("(id eq 1 and resultdate eq null)))(((", 15, 2, 2, 2, 1, 8)]
+        [DataRow("$DateInTimeZone(currentDate) lt '2022-01-22'", 10, 2, 1, 1, 0, 6)]
+        [DataRow("$DateInTimeZone(currentDate) lt '2022-01-22' or $ProducsCount(id) eq 0", 18, 4, 2, 2, 1, 9)]
+        [DataRow("$DateInTimeZone(currentDate, timeZone) lt '2022-01-22' or $ProducsCount(id) eq 0", 20, 5, 2, 2, 1, 10)]
         [DataRow("(((()))id eq 1 and revenue eq null or revenue eq 0", 19, 3, 3, 3, 2, 8)]
         [DataRow("(id lk test001 or id lk test222 or))(() createddate gt 23/11/12 and revenue eq 0", 22, 4, 4, 4, 3, 7)]
         [DataRow("(id lk test001 or id lk test222) or ((createddate gt 23/11/12 and revenue eq 0) and resultdate eq 23/11/12)", 26, 5, 5, 5, 4, 7)]
-        [DataRow("(description lk 'jimmy's test') or descr lk test", 12, 2, 2, 2, 1, 3)]
+        [DataRow("(description lk 'jimmy's test') or descr lk test", 12, 2, 2, 2, 1, 5)]
         public void WhenQueryHasDelimitersReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals, int expectedDelimiters)
         {
             var queryAnalyzer = new QueryLexer(query);

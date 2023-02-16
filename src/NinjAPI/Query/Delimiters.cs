@@ -19,5 +19,6 @@ namespace NinjAPI.Query
         public const char NullChar = '\0';
         public const char Dot = '.';
         public const char Comma = ',';
+        public const char Dollar = '$';
     }
 }

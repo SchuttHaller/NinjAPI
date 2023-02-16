@@ -23,6 +23,8 @@ namespace NinjAPI.Query
         LeftBracket,
         RigthBracket,
         SingleQuote,
+        Dollar,
+        Comma,
 
     // Other Terminals
         LogicalOperator,
