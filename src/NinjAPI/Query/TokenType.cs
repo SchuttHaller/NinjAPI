@@ -14,8 +14,15 @@ namespace NinjAPI.Query
         Clause,
         ClausePredicate,
         Function,
+        DataBaseFunction,
+        Parameters,
+        ParametersAggregate,
+        Parameter,
         NullableExpression,
         NullableIdentifier,
+        Left,
+        Rigth,
+        Value,
 
     // Delimiters
         LeftParenthesis,

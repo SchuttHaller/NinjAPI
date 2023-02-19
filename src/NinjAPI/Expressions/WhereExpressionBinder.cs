@@ -66,7 +66,7 @@ namespace NinjAPI.Expressions
                 return CreateExpression(eNode, aggregate);
 
             // create navigation property
-            var propertyNode = node.Children.First(n => n.Type == TokenType.Identifier);
+            var propertyNode = node.Children.First(n => n.Type == TokenType.Left);
             var navigation = PropertyNavigation(propertyNode, aggregate);
 
             // create predicate
