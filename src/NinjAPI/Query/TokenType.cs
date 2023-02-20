@@ -41,8 +41,10 @@ namespace NinjAPI.Query
         ElementFunction,
         MathFunction,
         ComparisionOperator,
-        Constant,
-        NullValue,
+        String,
+        Number,
+        Boolean,
+        Null,
         EndOfLine,
         SortingOperator //TODO: check if needed
     }

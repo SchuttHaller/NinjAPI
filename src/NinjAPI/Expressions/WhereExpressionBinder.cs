@@ -98,7 +98,7 @@ namespace NinjAPI.Expressions
             }
 
             // get constant
-            var constantNode = node.Children.First(n => n.Type == TokenType.Constant);
+            var constantNode = node.Children.First(n => n.Type == TokenType.String);
             var constantToken = (constantNode.Token as QueryToken)!;
             // validate constant type
             if(!constantToken.Value.TryChangeType(navExpType, out object constantValue))
