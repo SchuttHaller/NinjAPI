@@ -92,47 +92,47 @@ namespace NinjAPI.Query
 
         private QueryToken? GetNextToken(string current)
         {
-            if (string.IsNullOrWhiteSpace(current)) return null;
+            if (string.IsNullOrWhiteSpace(current)) 
+                return null;
 
             if (isStr)
             {
                 isStr = false;
-                return new() { Type = TokenType.String, Value = current };
+                return QueryToken.New(TokenType.String, current);
             }
 
-            if (char.IsDigit(current[0])) return new() { Type = TokenType.Number, Value = current };
+            if (char.IsDigit(current[0])) 
+                return QueryToken.New(TokenType.Number, current);
 
-            if (current == T.Null) return new() { Type = TokenType.Null, Value = current };
+            if (current == T.Null) 
+                return QueryToken.New(TokenType.Null, current);
 
-            if (TokenCollections.BooleanTypes.Contains(current)) return new() { Type = TokenType.Boolean, Value = current };
+            if (TokenCollections.BooleanTypes.Contains(current)) 
+                return QueryToken.New(TokenType.Boolean, current);
 
-            if (TokenCollections.LogicalOperators.Contains(current)) return new() { Type = TokenType.LogicalOperator, Value = current };
+            if (TokenCollections.LogicalOperators.Contains(current)) 
+                return QueryToken.New(TokenType.LogicalOperator, current);
 
-            if (TokenCollections.ElementFunctions.Contains(current)) return new() { Type = TokenType.ElementFunction, Value = current };
+            if (TokenCollections.ElementFunctions.Contains(current)) 
+                return QueryToken.New(TokenType.ElementFunction, current);
 
-            if (TokenCollections.MathFunctions.Contains(current)) return new() { Type = TokenType.MathFunction, Value = current };
+            if (TokenCollections.MathFunctions.Contains(current)) 
+                return QueryToken.New(TokenType.MathFunction, current);
 
-            if (TokenCollections.SortingOperators.Contains(current)) return new() { Type = TokenType.SortingOperator, Value = current };
+            if (TokenCollections.SortingOperators.Contains(current)) 
+                return QueryToken.New(TokenType.SortingOperator, current);
 
             if (TokenCollections.QuantifierOperators.Contains(current))
             {
                 var type = current == O.All ? TokenType.QuantifierFunctionAll : TokenType.QuantifierFunctionAny;
-                return new() { Type = type, Value = current };
+                return QueryToken.New(type, current);
             }
 
-            if (TokenCollections.ComparisionOperators.Contains(current)) return new() { Type = TokenType.ComparisionOperator, Value = current };
+            if (TokenCollections.ComparisionOperators.Contains(current)) 
+                return QueryToken.New(TokenType.ComparisionOperator, current);
 
             //identifier default
-            return new() { Type = TokenType.Identifier, Value = current };
-        }
-
-        private enum FlagType
-        {
-            Identifier,
-            Logical,
-            Operator,
-            Constant,
-
+            return QueryToken.New(TokenType.Identifier, current);
         }
 
         private static TokenType MapDelimiter(char delimiter)
@@ -146,6 +146,7 @@ namespace NinjAPI.Query
                 D.SingleQuote => TokenType.SingleQuote,
                 D.Dollar => TokenType.Dollar,
                 D.Comma => TokenType.Comma,
+                D.Dot => TokenType.Dot,
                 _ => TokenType.EndOfLine,
             };
         }

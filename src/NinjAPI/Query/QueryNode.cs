@@ -35,7 +35,33 @@ namespace NinjAPI.Query
 
         public void AddChild(QueryNode child)
         {
+            if (Type.IsTerminal())
+            {
+                throw new NotSupportedException("A terminal child cannot have children nodes");
+            }
+
             Children.Add(child);
+        }
+
+        public override string ToString()
+        {
+            if (Type.IsTerminal())
+                return (Token as QueryToken)!.Value;
+
+            if (!Children.Any()) 
+                return string.Empty;
+
+            var children = string.Join(" ", 
+                    Children.Select(c => c.ToString()).Where(s => !string.IsNullOrEmpty(s))
+                ).Trim();
+
+            if (Type.IsPredicateOrAggregate())
+            {
+                return $"{children}";
+            }
+
+            return $"{Token.Type} {{ {children} }}";
+
         }
 
     }

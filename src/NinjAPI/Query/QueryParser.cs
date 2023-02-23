@@ -11,8 +11,8 @@ using System.Threading.Tasks;
 
 namespace NinjAPI.Query
 {
-    public static class QueryParser
-    {               
+    public static partial class QueryParser
+    {
         public static QueryNode Parse(this List<QueryToken> tokens)
         {
             tokens = tokens ?? throw new ArgumentNullException(nameof(tokens));
@@ -24,7 +24,7 @@ namespace NinjAPI.Query
             // init the tree stack
             Stack<QueryNode> treeStack = new();
             QueryNode root = new (TokenType.Expression);
-            treeStack.Push(root);
+            treeStack.PushRange(new(TokenType.EndOfLine), root);
 
 
             int i = 0;
@@ -35,6 +35,7 @@ namespace NinjAPI.Query
             do
             {
                 top = transitionStack.Pop();
+                node = treeStack.Pop();
                 next = tokens[i];
 
                 if (top.IsTerminal())
@@ -46,27 +47,29 @@ namespace NinjAPI.Query
 
                     // is the token matches, then consume the input
                     i++;
-                    var terminalNode = treeStack.Pop();
-                    terminalNode.Token = next;
+
+                    // if we are consuming the same node set the value
+                    if(node.Type == next.Type)
+                    {
+                        node.Token = next;
+                    } 
                     continue;
                 }
 
                 // if transition table doesn't contain a valid transition for the non-terminal token
                 // it's a syntanx error
-                if (!_transitionTable[top].ContainsKey(next.Type))
+                if (!GrammarTable[top].ContainsKey(next.Type))
                 {
                     throw new Exception($"Syntax error: Unexpected token '{next.Value}'");
                 }
 
                 // get next production for the non-terminal
-                var production = _transitionTable[top][next.Type];
+                var production = GrammarTable[top][next.Type];
                 
                 if (production.Any())
                 {
                     // expand the transition stack
                     transitionStack.PushRange(production.Reverse());
-
-                    node = treeStack.Pop();
                     // create nodes based on production
                     var newNodes = production
                         .Select(t => new QueryNode(t, node))
@@ -80,66 +83,5 @@ namespace NinjAPI.Query
 
             return root;
         }
-
-
-        /// <summary>
-        /// Grammar Transition Table:
-        /// </summary>
-        private static readonly Dictionary<TokenType, Dictionary<TokenType, TokenType[]>> _transitionTable = new()
-        {
-            {
-                TokenType.Expression,
-                new() {
-                    { TokenType.LeftParenthesis, new TokenType[] { TokenType.Clause, TokenType.ExpressionPredicate } },
-                    { TokenType.Identifier, new TokenType[] { TokenType.Clause, TokenType.ExpressionPredicate } }
-                }
-            },
-            {
-                TokenType.ExpressionPredicate,
-                new() {
-                    { TokenType.EndOfLine, Array.Empty<TokenType>() },
-                    { TokenType.RigthParenthesis, Array.Empty<TokenType>() },
-                    { TokenType.LogicalOperator, new TokenType[] { TokenType.LogicalOperator, TokenType.Expression } }
-                }
-            },
-            {
-                TokenType.Clause,
-                new() {
-                    { TokenType.LeftParenthesis, new TokenType[] { TokenType.LeftParenthesis, TokenType.Expression, TokenType.RigthParenthesis } },
-                    { TokenType.Identifier,new TokenType[] { TokenType.Identifier, TokenType.ClausePredicate } }
-                }
-            },
-            {
-                TokenType.ClausePredicate,
-                new() {
-                    { TokenType.LeftBracket, new TokenType[] { TokenType.LeftBracket, TokenType.Function } },
-                    { TokenType.ComparisionOperator,new TokenType[] { TokenType.ComparisionOperator, TokenType.String } }
-                }
-            },
-            {
-                TokenType.Function,
-                new() {
-                    { TokenType.QuantifierFunctionAny, new TokenType[] { TokenType.QuantifierFunctionAny, TokenType.LeftParenthesis, TokenType.NullableExpression, TokenType.RigthParenthesis, TokenType.RigthBracket } },
-                    { TokenType.QuantifierFunctionAll, new TokenType[] { TokenType.QuantifierFunctionAll, TokenType.LeftParenthesis, TokenType.Expression, TokenType.RigthParenthesis, TokenType.RigthBracket } },
-                    { TokenType.MathFunction, new TokenType[] { TokenType.MathFunction, TokenType.LeftParenthesis, TokenType.NullableIdentifier, TokenType.RigthParenthesis, TokenType.RigthBracket, TokenType.ComparisionOperator, TokenType.String } },
-                    { TokenType.ElementFunction, new TokenType[] { TokenType.ElementFunction, TokenType.LeftParenthesis, TokenType.NullableExpression, TokenType.RigthParenthesis, TokenType.RigthBracket, TokenType.ComparisionOperator, TokenType.String } }
-                }
-            },
-            {
-                TokenType.NullableExpression,
-                new() {
-                    { TokenType.Identifier, new TokenType[] { TokenType.Expression } },
-                    { TokenType.LeftParenthesis, new TokenType[] { TokenType.Expression } },
-                    { TokenType.RigthParenthesis,  Array.Empty<TokenType>() }
-                }
-            },
-            {
-                TokenType.NullableIdentifier,
-                new() {
-                    { TokenType.Identifier, new TokenType[] { TokenType.Identifier } },
-                    { TokenType.RigthParenthesis,  Array.Empty<TokenType>() }
-                }
-            }
-        };
     }
 }
