@@ -25,7 +25,14 @@ namespace NinjAPI.Query
             query ??= string.Empty;
             _query = query!.ToLower();
         }
-        private static bool IsDelimiter(char delimiter) => TokenCollections.Delimiters.Contains(delimiter);
+        private static bool IsDelimiter(char delimiter, char prevChar = '\x0000')
+        {
+            if (prevChar == '\x0000') return TokenCollections.Delimiters.Contains(delimiter);
+
+            if (char.IsDigit(prevChar) && delimiter == D.Dot) return false;
+
+            return TokenCollections.Delimiters.Contains(delimiter);
+        }
 
         public List<QueryToken> GetTokens()
         {
@@ -59,7 +66,7 @@ namespace NinjAPI.Query
                     inString = false;
                 }
 
-                if ((currentChar == D.Space || currentChar == D.NullChar || IsDelimiter(currentChar)) && !inString)
+                if ((currentChar == D.Space || currentChar == D.NullChar || IsDelimiter(currentChar, prevChar)) && !inString)
                 {
                     if (tokenBuilder.Length > 0)
                     {
@@ -68,12 +75,12 @@ namespace NinjAPI.Query
                     }
                 }
 
-                if (IsDelimiter(currentChar) && !inString)
+                if (IsDelimiter(currentChar, prevChar) && !inString)
                 {
                     tokens.Add(new() { Type = MapDelimiter(currentChar), Value = currentChar.ToString() });
                 }
 
-                if (inString || (!IsDelimiter(currentChar) && currentChar != D.Space && currentChar != D.NullChar))
+                if (inString || (!IsDelimiter(currentChar, prevChar) && currentChar != D.Space && currentChar != D.NullChar))
                     tokenBuilder = tokenBuilder.Append(currentChar);
 
             }

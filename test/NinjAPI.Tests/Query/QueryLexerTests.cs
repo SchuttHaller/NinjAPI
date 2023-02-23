@@ -30,6 +30,7 @@ namespace NinjAPI.Tests.Query
         [DataRow("name lk 'felipe'", 6, 1, 1, 1)]
         [DataRow("revenue gt 100", 4, 1, 1, 1)]
         [DataRow("revenue lt 200", 4, 1, 1, 1)]
+        [DataRow("revenue lt 200.50", 4, 1, 1, 1)]
         [DataRow("total eq 500", 4, 1, 1, 1)]
         [DataRow("description lk 'jimmy's test'", 6, 1, 1, 1)]
         [DataRow("name lk jimmy duarte", 5, 3, 1, 0)]
