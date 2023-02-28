@@ -11,6 +11,7 @@ using System.Xml.Linq;
 using O = NinjAPI.Query.Operators;
 using D = NinjAPI.Query.Delimiters;
 using T = NinjAPI.Query.Types;
+using NinjAPI.Helpers;
 
 namespace NinjAPI.Query
 {
@@ -21,9 +22,8 @@ namespace NinjAPI.Query
         private readonly QueryToken EndOfLine = new() { Type = TokenType.EndOfLine, Value = D.NullChar.ToString() };
         private readonly QueryToken SingleQuote = new() { Type = TokenType.SingleQuote, Value = D.SingleQuote.ToString() };
         public QueryLexer(string query) 
-        {
-            query ??= string.Empty;
-            _query = query!.ToLower();
+        {           
+            _query = query ?? string.Empty;
         }
         private static bool IsDelimiter(char delimiter, char prevChar = '\x0000')
         {
@@ -107,28 +107,28 @@ namespace NinjAPI.Query
             if (current == T.Null) 
                 return QueryToken.New(TokenType.Null, current);
 
-            if (TokenCollections.BooleanTypes.Contains(current)) 
+            if (TokenCollections.BooleanTypes.ContainsNoCase(current)) 
                 return QueryToken.New(TokenType.Boolean, current);
 
-            if (TokenCollections.LogicalOperators.Contains(current)) 
+            if (TokenCollections.LogicalOperators.ContainsNoCase(current)) 
                 return QueryToken.New(TokenType.LogicalOperator, current);
 
-            if (TokenCollections.ElementFunctions.Contains(current)) 
+            if (TokenCollections.ElementFunctions.ContainsNoCase(current)) 
                 return QueryToken.New(TokenType.ElementFunction, current);
 
-            if (TokenCollections.MathFunctions.Contains(current)) 
+            if (TokenCollections.MathFunctions.ContainsNoCase(current)) 
                 return QueryToken.New(TokenType.MathFunction, current);
 
-            if (TokenCollections.SortingOperators.Contains(current)) 
+            if (TokenCollections.SortingOperators.ContainsNoCase(current)) 
                 return QueryToken.New(TokenType.SortingOperator, current);
 
-            if (TokenCollections.QuantifierOperators.Contains(current))
+            if (TokenCollections.QuantifierOperators.ContainsNoCase(current))
             {
                 var type = current == O.All ? TokenType.QuantifierFunctionAll : TokenType.QuantifierFunctionAny;
                 return QueryToken.New(type, current);
             }
 
-            if (TokenCollections.ComparisionOperators.Contains(current)) 
+            if (TokenCollections.ComparisionOperators.ContainsNoCase(current)) 
                 return QueryToken.New(TokenType.ComparisionOperator, current);
 
             //identifier default

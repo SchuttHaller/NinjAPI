@@ -20,7 +20,8 @@ namespace NinjAPI.Expressions
         {
             return expression switch
             {
-                MemberExpression memberExpression => memberExpression.Member.DeclaringType!,
+                MemberExpression memberExpression => memberExpression.Type,
+                ParameterExpression paramExpression => paramExpression.Type,
                 MethodCallExpression methodCallExpression => methodCallExpression.Method.ReturnType,
                 _ => throw new NotSupportedException(),
             };

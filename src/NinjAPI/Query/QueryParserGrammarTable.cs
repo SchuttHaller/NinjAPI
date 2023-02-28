@@ -132,7 +132,7 @@ namespace NinjAPI.Query
                     { TokenType.ComparisionOperator, Array.Empty<TokenType>() },
                     { TokenType.LeftBracket, Array.Empty<TokenType>() },
                     { TokenType.Comma, Array.Empty<TokenType>() },
-                    { TokenType.Dot, new TokenType[] { TokenType.Dot, TokenType.Identifier } },
+                    { TokenType.Dot, new TokenType[] { TokenType.Dot, TokenType.PropertyNavigation } },
                 }
             },
             {

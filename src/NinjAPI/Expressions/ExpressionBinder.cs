@@ -47,23 +47,21 @@ namespace NinjAPI.Expressions
         protected Expression PropertyNavigation(QueryNode node, Expression navigationExp)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
-            if (node.Token == null) throw new ArgumentNullException(nameof(node.Token));
-            if (node.Token is not QueryToken) throw new ArgumentException("token must be a valid identifier", nameof(node.Token));
+            if (node.Token == null) throw new ArgumentNullException(nameof(node), "Token cannot be null");
+            if (node.Type != TokenType.PropertyNavigation) throw new ArgumentException("Token must be a valid identifier", nameof(node));
+            if (!node.Children.Any()) throw new ArgumentException("node must have children", nameof(node));
 
-            return PropertyNavigation(navigationExp, (node.Token as QueryToken)!.Value);
-        }
 
-        private Expression PropertyNavigation(Expression navigation, string identifier)
-        {
-            Type type = navigation.GetExpressionReturnType();
-            var idPieces = identifier.Split('.', 2);
-            var propertyKey = idPieces[0];
+            Type type = navigationExp.GetExpressionReturnType();
 
-            var property = GetEntityProperty(type, propertyKey);
-            var propertyExpression = Expression.Property(navigation, property);
-  
-            if (idPieces.Length > 1)
-                return PropertyNavigation(propertyExpression, idPieces[1]);
+            var propertyKey = node.GetChildByType(TokenType.Identifier)!.Token as QueryToken;
+            var aggregate = node.GetChildByType(TokenType.PropertyNavigationAggregate);
+
+            var property = GetEntityProperty(type, propertyKey!.Value);
+            var propertyExpression = Expression.Property(navigationExp, property);
+
+            if (aggregate!.Children.Any())
+                return PropertyNavigation(aggregate.GetChildByType(TokenType.PropertyNavigation)!, propertyExpression);
 
             return propertyExpression;
         }

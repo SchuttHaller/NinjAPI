@@ -11,5 +11,8 @@ namespace NinjAPI.Errors
     {
         public InvalidTokenException(Token token): base($"Invalid token type: { token.Type }")
         {}
+
+        public InvalidTokenException(Token token, string message) : base($"Invalid token type: {token.Type} - {message}")
+        {}
     }
 }

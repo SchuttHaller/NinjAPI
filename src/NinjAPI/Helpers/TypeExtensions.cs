@@ -32,5 +32,21 @@ namespace NinjAPI.Helpers
                 return false;
             }
         }
+
+        internal static Type GetNullableType(this Type type)
+        {
+            // Use Nullable.GetUnderlyingType() to remove the Nullable<T> wrapper if type is already nullable.
+            type = Nullable.GetUnderlyingType(type) ?? type; // avoid type becoming null
+            if (type.IsValueType)
+                return typeof(Nullable<>).MakeGenericType(type);
+            else
+                return type;
+        }
+
+        internal static object? GetNullValueForType(this Type type)
+        {
+            var targetType = type.GetNullableType();
+            return Convert.ChangeType(null, targetType);
+        }
     }
 }

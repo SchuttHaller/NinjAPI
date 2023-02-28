@@ -1,5 +1,4 @@
 ﻿using NinjAPI.Query;
-using NinjAPI.Tests.Query.Mocks;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -44,39 +43,39 @@ namespace NinjAPI.Tests.Query
             {
                 new object[] {
                     "sale.revenue eq 1000.50",
-                    "Expression { Clause { Left { PropertyNavigation { sale . revenue } } eq Right { Value { 1000.50 } } } }"
+                    "Expression { Clause { PropertyNavigation { sale . revenue } eq Value { 1000.50 } } }"
                 },
                 new object[] {
                     "deleted ne true",
-                    "Expression { Clause { Left { PropertyNavigation { deleted } } ne Right { Value { true } } } }"
+                    "Expression { Clause { PropertyNavigation { deleted } ne Value { true } } }"
                 },
                 new object[] {
                     "revenue gt 1150",
-                    "Expression { Clause { Left { PropertyNavigation { revenue } } gt Right { Value { 1150 } } } }"
+                    "Expression { Clause { PropertyNavigation { revenue } gt Value { 1150 } } }"
                 },
                 new object[] {
                     "revenue ge 1500",
-                    "Expression { Clause { Left { PropertyNavigation { revenue } } ge Right { Value { 1500 } } } }"
+                    "Expression { Clause { PropertyNavigation { revenue } ge Value { 1500 } } }"
                 },
                 new object[] {
                     "revenue lt 1000",
-                    "Expression { Clause { Left { PropertyNavigation { revenue } } lt Right { Value { 1000 } } } }"
+                    "Expression { Clause { PropertyNavigation { revenue } lt Value { 1000 } } }"
                 },
                 new object[] {
                     "revenue le 1100",
-                    "Expression { Clause { Left { PropertyNavigation { revenue } } le Right { Value { 1100 } } } }"
+                    "Expression { Clause { PropertyNavigation { revenue } le Value { 1100 } } }"
                 },
                 new object[] {
                     "description lk 'purchase'",
-                    "Expression { Clause { Left { PropertyNavigation { description } } lk Right { Value { ' purchase ' } } } }"
+                    "Expression { Clause { PropertyNavigation { description } lk Value { ' purchase ' } } }"
                 },
                 new object[] {
                     "description.text sw 'pur'",
-                    "Expression { Clause { Left { PropertyNavigation { description . text } } sw Right { Value { ' pur ' } } } }"
+                    "Expression { Clause { PropertyNavigation { description . text } sw Value { ' pur ' } } }"
                 },
                 new object[] {
                     "description ew 'chase'",
-                    "Expression { Clause { Left { PropertyNavigation { description } } ew Right { Value { ' chase ' } } } }"
+                    "Expression { Clause { PropertyNavigation { description } ew Value { ' chase ' } } }"
                 },
             };
         }
@@ -87,15 +86,15 @@ namespace NinjAPI.Tests.Query
             {
                 new object[] {
                     "id gt 1 and transaction lk '20012'",
-                    "Expression { Clause { Left { PropertyNavigation { id } } gt Right { Value { 1 } } } and Expression { Clause { Left { PropertyNavigation { transaction } } lk Right { Value { ' 20012 ' } } } } }"
+                    "Expression { Clause { PropertyNavigation { id } gt Value { 1 } } and Clause { PropertyNavigation { transaction } lk Value { ' 20012 ' } } }"
                 },
                 new object[] {
                     "id eq 1 or id eq 2",
-                    "Expression { Clause { Left { PropertyNavigation { id } } eq Right { Value { 1 } } } or Expression { Clause { Left { PropertyNavigation { id } } eq Right { Value { 2 } } } } }"
+                    "Expression { Clause { PropertyNavigation { id } eq Value { 1 } } or Clause { PropertyNavigation { id } eq Value { 2 } } }"
                 },
                 new object[] {
                     "id eq 1 or id eq 2 and transaction lk '20012'",
-                    "Expression { Clause { Left { PropertyNavigation { id } } eq Right { Value { 1 } } } or Expression { Clause { Left { PropertyNavigation { id } } eq Right { Value { 2 } } } and Expression { Clause { Left { PropertyNavigation { transaction } } lk Right { Value { ' 20012 ' } } } } } }"
+                    "Expression { Clause { PropertyNavigation { id } eq Value { 1 } } or Clause { PropertyNavigation { id } eq Value { 2 } } and Clause { PropertyNavigation { transaction } lk Value { ' 20012 ' } } }"
                 }
             };
         }
