@@ -61,7 +61,7 @@ namespace NinjAPI.Query
                 {
                     continue;
                 }
-                if (currentChar == D.SingleQuote && (nextChar == D.NullChar || nextChar == D.Space || IsDelimiter(nextChar)) && inString && prevChar != D.Backslash)
+                if (currentChar == D.SingleQuote && inString && prevChar != D.Backslash)
                 {
                     inString = false;
                 }

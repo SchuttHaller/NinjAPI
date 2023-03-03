@@ -1,4 +1,5 @@
 ﻿using NinjAPI.Query;
+using NinjAPI.Tests.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,7 +33,7 @@ namespace NinjAPI.Tests.Query
         [DataRow("revenue lt 200", 4, 1, 1, 1)]
         [DataRow("revenue lt 200.50", 4, 1, 1, 1)]
         [DataRow("total eq 500", 4, 1, 1, 1)]
-        [DataRow("description lk 'jimmy's test'", 6, 1, 1, 1)]
+        [DataRow("description lk 'jimmy\\'s test'", 6, 1, 1, 1)]
         [DataRow("name lk jimmy duarte", 5, 3, 1, 0)]
         [DataRow("closed eq true", 4, 1, 1, 1)]
         public void WhenQueryIsSimpleExpressionReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals)
@@ -51,7 +52,7 @@ namespace NinjAPI.Tests.Query
         [DataRow("id eq 1 and revenue eq null or revenue eq 0", 12, 3, 3, 3, 2)]
         [DataRow("(name lk 'felipe') or lastname lk 'duarte'", 14, 2, 2, 2, 1)]
         [DataRow("id lk 'test001' or id lk 'test222' or createddate gt '23/11/12' and revenue eq 0", 22, 4, 4, 4, 3)]
-        [DataRow("description lk 'jimmy's \\\"test\\\"' or description lk 'pepe's test'", 12, 2, 2, 2, 1)]
+        [DataRow("description lk 'jimmy\\'s \\\"test\\\"' or description lk 'pepe\\'s test'", 12, 2, 2, 2, 1)]
         public void WhenQueryHasLogicalOperatorsReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals)
         {
             var queryAnalyzer = new QueryLexer(query);
@@ -67,12 +68,13 @@ namespace NinjAPI.Tests.Query
         [TestMethod]
         [DataRow("(id eq 1 and resultdate eq null)))(((", 15, 2, 2, 2, 1, 8)]
         [DataRow("$DateInTimeZone(currentDate) lt '2022-01-22'", 10, 2, 1, 1, 0, 6)]
+        [DataRow("sale.date gt '2023-01-12 and sale.date lt '2023-01-13'", 10, 2, 1, 2, 0, 5)]
         [DataRow("$DateInTimeZone(currentDate) lt '2022-01-22' or $ProducsCount(id) eq 0", 18, 4, 2, 2, 1, 9)]
         [DataRow("$DateInTimeZone(currentDate, timeZone) lt '2022-01-22' or $ProducsCount(id) eq 0", 20, 5, 2, 2, 1, 10)]
         [DataRow("(((()))id eq 1 and revenue eq null or revenue eq 0", 19, 3, 3, 3, 2, 8)]
         [DataRow("(id lk test001 or id lk test222 or))(() createddate gt '23/11/12' and revenue eq 0", 24, 6, 4, 2, 3, 9)]
         [DataRow("(id lk 'test001' or id lk 'test222') or ((createddate gt '23/11/12' and revenue eq 0) and resultdate eq '23/11/12')", 34, 5, 5, 5, 4, 15)]
-        [DataRow("(description lk 'jimmy's test') or descr lk 'test'", 14, 2, 2, 2, 1, 7)]
+        [DataRow("(description lk 'jimmy\\'s test') or descr lk 'test'", 14, 2, 2, 2, 1, 7)]
         public void WhenQueryHasDelimitersReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals, int expectedDelimiters)
         {
             var queryAnalyzer = new QueryLexer(query);
