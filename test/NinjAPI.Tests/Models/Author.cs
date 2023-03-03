@@ -9,8 +9,9 @@ namespace NinjAPI.Tests.Models
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Name { get; set; } = default!;
+        public DateTime BirthDate { get; set; }
 
-        public virtual ICollection<Book> Books { get; set; } = new List<Book>();
+        public virtual List<Book> Books { get; set; } = new List<Book>();
 
         public override bool Equals(object? obj)
         {

@@ -17,7 +17,7 @@ namespace NinjAPI.Tests.Models
         public int Id { get; set; }
         public DateTime Date { get; set; }
         
-        public virtual ICollection<SaleItem> Items { get; set; } = new List<SaleItem>();
+        public virtual List<SaleItem> Items { get; set; } = new List<SaleItem>();
 
         public override bool Equals(object? obj)
         {

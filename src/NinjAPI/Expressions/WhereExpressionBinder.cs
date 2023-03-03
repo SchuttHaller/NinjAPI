@@ -17,7 +17,7 @@ namespace NinjAPI.Expressions
     {
         public override Expression<Func<TEntity, bool>> BindExpression(string query)
         {
-            var parameter = Expression.Parameter(EntityType, "x");
+            var parameter = EntityParameter;
             var queryTree = new QueryLexer(query).GetTokens().Parse();
             var body = CreateExpression(queryTree, parameter);
 
@@ -29,7 +29,7 @@ namespace NinjAPI.Expressions
             if(node == null) throw new ArgumentNullException(nameof(node));
             if(node.Token.Type != TokenType.Expression) throw new InvalidTokenException(node.Token);
 
-            aggregate ??= Expression.Parameter(EntityType);
+            aggregate ??= EntityParameter;
 
             var clauseNode = node.GetChildByType(TokenType.Clause)!;
             var predicateNode = node.GetChildByType(TokenType.ExpressionPredicate)!;
@@ -191,7 +191,10 @@ namespace NinjAPI.Expressions
         private static readonly string[] StringOperators =
             new string[] {
                 O.Equal,
-                O.NotEqual
+                O.NotEqual,
+                O.Like,
+                O.StartsWith,
+                O.EndsWith
             };
 
         private static readonly Dictionary<Type, string[]> OperatorsByType = new()

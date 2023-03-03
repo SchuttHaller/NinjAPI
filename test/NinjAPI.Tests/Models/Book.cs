@@ -19,7 +19,7 @@ namespace NinjAPI.Tests.Models
 
         public virtual Author Author { get; set; } = default!;
 
-        public virtual ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
+        public virtual List<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
 
         public override bool Equals(object? obj)
         {

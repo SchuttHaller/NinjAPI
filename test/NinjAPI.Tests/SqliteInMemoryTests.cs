@@ -33,8 +33,9 @@ namespace NinjAPI.Tests
 
             // These options will be used by the context instances in this test suite, including the connection opened above.
             _contextOptions = new DbContextOptionsBuilder<BookStoreDbContext>()
-           .UseSqlite(_connection)
-           .Options;
+            .UseLazyLoadingProxies()
+            .UseSqlite(_connection)
+            .Options;
 
             // Create the schema
             using var context = new BookStoreDbContext(_contextOptions);
@@ -66,7 +67,8 @@ namespace NinjAPI.Tests
               new Author
               {
                   Name = "Ernest Hemingway",
-                  Books = new[]
+                  BirthDate= DateTime.Parse("1899-07-21"),
+                  Books = new()
                   {
                        new Book {
                            Id = Guid.Parse("302cdb59-3e22-43ab-8f17-69edf2e8fa59"),
@@ -85,7 +87,8 @@ namespace NinjAPI.Tests
               new Author
               {
                   Name = "Federico García Lorca",
-                  Books = new[]
+                  BirthDate = DateTime.Parse("1898-06-05"),
+                  Books = new()
                   {
                        new Book {
                            Id = Guid.Parse("86e68fbe-90c1-475c-84ed-34d2231e8006"),
@@ -104,7 +107,8 @@ namespace NinjAPI.Tests
               new Author
               {
                   Name = "Hermann Hesse",
-                  Books = new[]
+                  BirthDate = DateTime.Parse("1877-07-02"),
+                  Books = new()
                   {
                        new Book {
                            Id = Guid.Parse("11521b88-4d59-4bba-9083-a5299f2cf41f"),
@@ -129,7 +133,8 @@ namespace NinjAPI.Tests
               new Author
               {
                   Name = "Juan Rulfo",
-                  Books = new[]
+                  BirthDate = DateTime.Parse("1917-05-16"),
+                  Books = new()
                   {
                        new Book {
                            Id = Guid.Parse("e0ed92d6-f2d9-47f9-8746-b16310f34f9b"),
@@ -149,7 +154,7 @@ namespace NinjAPI.Tests
             context.AddRange(
                 new Sale { 
                     Date = DateTime.Parse("2023-01-12T12:30:02"),
-                    Items = new[]
+                    Items = new()
                     {
                         new SaleItem { 
                             BookId = Guid.Parse("302cdb59-3e22-43ab-8f17-69edf2e8fa59"),
@@ -167,8 +172,21 @@ namespace NinjAPI.Tests
                 },
                 new Sale
                 {
+                    Date = DateTime.Parse("2023-02-06T09:10:45"),
+                    Items = new()
+                    {
+                        new SaleItem {
+                            BookId = Guid.Parse("ad54c999-49fb-4128-b9fa-ae06fe796bf9"),
+                            Price = 12,
+                            Discount= 0,
+                            FinalPrice= 12
+                        }
+                    }
+                },
+                new Sale
+                {
                     Date = DateTime.Parse("2023-02-06T18:10:45"),
-                    Items = new[]
+                    Items = new()
                     {
                         new SaleItem {
                             BookId = Guid.Parse("11521b88-4d59-4bba-9083-a5299f2cf41f"),
@@ -199,7 +217,7 @@ namespace NinjAPI.Tests
                 new Sale
                 {
                     Date = DateTime.Parse("2023-02-24T19:11:11"),
-                    Items = new[]
+                    Items = new()
                     {
                         new SaleItem {
                             BookId = Guid.Parse("86e68fbe-90c1-475c-84ed-34d2231e8006"),

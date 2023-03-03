@@ -13,6 +13,13 @@ namespace NinjAPI.Expressions
 {
     public abstract class ExpressionBinder<TEntity> where TEntity: class
     {
+        protected readonly ParameterExpression EntityParameter;
+
+        public ExpressionBinder()
+        {
+            EntityParameter = Expression.Parameter(EntityType, "x");
+        }
+
         public abstract Expression BindExpression(string expressionStr);
 
         protected Type EntityType => typeof(TEntity);
