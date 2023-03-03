@@ -37,7 +37,7 @@ namespace NinjAPI.Query
         public static int ConstantCount(this List<QueryToken> tokens) => tokens.Count(x => x.Type == TokenType.String || x.Type == TokenType.Null || x.Type == TokenType.Number || x.Type == TokenType.Boolean);
         public static int NullCount(this List<QueryToken> tokens) => tokens.Count(x => x.Type == TokenType.Null);
         public static int LogicalOperatorCount(this List<QueryToken> tokens) => tokens.Count(x => x.Type == TokenType.LogicalOperator);
-        public static int DelimiterCount(this List<QueryToken> tokens) => tokens.Count(x => x.Type == TokenType.EndOfLine || x.Type == TokenType.LeftBracket || x.Type == TokenType.LeftParenthesis || x.Type == TokenType.RigthBracket || x.Type == TokenType.RigthParenthesis || x.Type == TokenType.Dollar || x.Type == TokenType.SingleQuote || x.Type == TokenType.Comma);
+        public static int DelimiterCount(this List<QueryToken> tokens) => tokens.Count(x => x.Type == TokenType.EndOfLine || x.Type == TokenType.LeftBracket || x.Type == TokenType.LeftParenthesis || x.Type == TokenType.RigthBracket || x.Type == TokenType.RigthParenthesis || x.Type == TokenType.Dollar || x.Type == TokenType.SingleQuote || x.Type == TokenType.Comma || x.Type == TokenType.Dot);
 
     }
 }
