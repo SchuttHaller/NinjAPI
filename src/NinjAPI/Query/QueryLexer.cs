@@ -140,9 +140,9 @@ namespace NinjAPI.Query
             return delimiter switch
             {
                 D.LeftParenthesis => TokenType.LeftParenthesis,
-                D.RightParenthesis => TokenType.RigthParenthesis,
+                D.RightParenthesis => TokenType.RightParenthesis,
                 D.LeftBracket => TokenType.LeftBracket,
-                D.RightBracket => TokenType.RigthBracket,
+                D.RightBracket => TokenType.RightBracket,
                 D.SingleQuote => TokenType.SingleQuote,
                 D.Dollar => TokenType.Dollar,
                 D.Comma => TokenType.Comma,

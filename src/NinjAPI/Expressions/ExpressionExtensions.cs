@@ -1,4 +1,5 @@
-﻿using NinjAPI.Query;
+﻿using NinjAPI.Helpers;
+using NinjAPI.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,8 @@ namespace NinjAPI.Expressions
                 MemberExpression memberExpression => memberExpression.Type,
                 ParameterExpression paramExpression => paramExpression.Type,
                 MethodCallExpression methodCallExpression => methodCallExpression.Method.ReturnType,
-                _ => throw new NotSupportedException(),
+                LambdaExpression lambdaExpression => lambdaExpression.ReturnType,
+                _ => expression.Type.GetNullableType(),
             };
         }
     }

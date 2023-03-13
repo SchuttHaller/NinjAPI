@@ -1,12 +1,4 @@
 ﻿using NinjAPI.Query;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NinjAPI.Tests.Query
 {
@@ -16,7 +8,8 @@ namespace NinjAPI.Tests.Query
         [TestMethod]
         [DynamicData(nameof(BasicClauseExpressions), DynamicDataSourceType.Method)]
         [DynamicData(nameof(LogicOperatorExpressions), DynamicDataSourceType.Method)]
-        public void Expression_WithBasicClause_ReturnsTree(string query, string expected)
+        [DynamicData(nameof(FunctionExpressions), DynamicDataSourceType.Method)]
+        public void Valid_Query_ReturnsTree(string query, string expected)
         {
             var tokens = new QueryLexer(query).GetTokens();
             var tree = QueryParser.Parse(tokens);
@@ -31,7 +24,8 @@ namespace NinjAPI.Tests.Query
         [DataRow("id transaction lk '20012'")]
         [DataRow("23453 transaction lk '20012'")]
         [DataRow("id transaction lk '20012")]
-        public void InvalidQuery_ThrowsError(string query)
+        [DataRow("sale.date gt '2023-01-12 and sale.date lt '2023-01-13'")]
+        public void Invalid_Query_ThrowsError(string query)
         {
             var tokens = new QueryLexer(query).GetTokens();
             Assert.ThrowsException<Exception>(() => QueryParser.Parse(tokens));
@@ -95,6 +89,57 @@ namespace NinjAPI.Tests.Query
                 new object[] {
                     "id eq 1 or id eq 2 and transaction lk '20012'",
                     "Expression { Clause { PropertyNavigation { id } eq Value { 1 } } or Clause { PropertyNavigation { id } eq Value { 2 } } and Clause { PropertyNavigation { transaction } lk Value { ' 20012 ' } } }"
+                }
+            };
+        }
+
+        private static IEnumerable<object[]> FunctionExpressions()
+        {
+            return new[]
+            {
+                new object[] {
+                    "saleItems[any]",
+                    "Expression { Clause { PropertyNavigation { saleItems [ any ] } } }"
+                },
+                new object[] {
+                    "saleItems[any discount gt 0]",
+                    "Expression { Clause { PropertyNavigation { saleItems [ any Expression { Clause { PropertyNavigation { discount } gt Value { 0 } } } ] } } }"
+                },
+                new object[] {
+                    "saleItems[any (sale.date gt '2023-02-06')]",
+                    "Expression { Clause { PropertyNavigation { saleItems [ any Expression { Clause { ( Expression { Clause { PropertyNavigation { sale . date } gt Value { ' 2023-02-06 ' } } } ) } } ] } } }"
+                },
+                new object[] {
+                    "saleItems[all discount eq 0]",
+                    "Expression { Clause { PropertyNavigation { saleItems [ all Expression { Clause { PropertyNavigation { discount } eq Value { 0 } } } ] } } }"
+                },
+                new object[] {
+                    "books[first].name eq 'Der Steppenwolf'",
+                    "Expression { Clause { PropertyNavigation { books [ first ] . name } eq Value { ' Der Steppenwolf ' } } }"
+                },
+                new object[] {
+                    "books[last].price gt 10",
+                    "Expression { Clause { PropertyNavigation { books [ last ] . price } gt Value { 10 } } }"
+                },
+                new object[] {
+                    "books[first price gt 10].name lk 'er'",
+                    "Expression { Clause { PropertyNavigation { books [ first Expression { Clause { PropertyNavigation { price } gt Value { 10 } } } ] . name } lk Value { ' er ' } } }"
+                },
+                new object[] {
+                    "books[last price gt 10].name lk 'er'",
+                    "Expression { Clause { PropertyNavigation { books [ last Expression { Clause { PropertyNavigation { price } gt Value { 10 } } } ] . name } lk Value { ' er ' } } }"
+                },
+                new object[] {
+                    "items[sum finalprice] gt 25",
+                    "Expression { Clause { PropertyNavigation { items [ sum PropertyNavigation { finalprice } ] } gt Value { 25 } } }"
+                },
+                new object[] {
+                    "items[max finalprice] gt 12",
+                    "Expression { Clause { PropertyNavigation { items [ max PropertyNavigation { finalprice } ] } gt Value { 12 } } }"
+                },
+                new object[] {
+                    "items[min finalprice] lt 12",
+                    "Expression { Clause { PropertyNavigation { items [ min PropertyNavigation { finalprice } ] } lt Value { 12 } } }"
                 }
             };
         }

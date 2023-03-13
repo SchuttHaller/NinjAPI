@@ -1,15 +1,6 @@
 ﻿using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using NinjAPI.Tests.Models;
-using System;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 
 namespace NinjAPI.Tests
 {
@@ -20,9 +11,7 @@ namespace NinjAPI.Tests
 
         #region ConstructorAndDispose
         public SqliteInMemoryTests()
-        {
-
-            
+        {           
             // Create and open a connection. This creates the SQLite in-memory database, which will persist until the connection is closed
             // at the end of the test (see Dispose below).
             _connection = new SqliteConnection("DataSource=:memory:");
@@ -61,7 +50,7 @@ namespace NinjAPI.Tests
         #endregion
 
         #region Data
-        private void AddTestData(BookStoreDbContext context)
+        private static void AddTestData(BookStoreDbContext context)
         {
             context.AddRange(
               new Author
@@ -74,7 +63,7 @@ namespace NinjAPI.Tests
                            Id = Guid.Parse("302cdb59-3e22-43ab-8f17-69edf2e8fa59"),
                            Name = "For Whom the Bell Tolls",
                            Stock= 10,
-                           Price= 10,
+                           Price= 11,
                        },
                         new Book {
                            Id = Guid.Parse("2eeb957c-a1aa-4e9c-a600-16401b29a30a"),
@@ -100,7 +89,7 @@ namespace NinjAPI.Tests
                            Id = Guid.Parse("461a4f87-d280-46fd-bb07-5d0d44da8803"),
                            Name = "Yerma",
                            Stock= 5,
-                           Price= 8,
+                           Price= 12,
                        }
                   }
               },

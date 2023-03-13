@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -47,6 +49,19 @@ namespace NinjAPI.Helpers
         {
             var targetType = type.GetNullableType();
             return Convert.ChangeType(null, targetType);
+        }
+
+        internal static bool TryGetTypeFromEnumerable(this Type enumerableType, out Type? baseType)
+        {
+            baseType = null;
+            if (!typeof(IEnumerable).IsAssignableFrom(enumerableType))
+            {
+                return false;
+            }
+
+            // get type from base type from IEnumerable
+            baseType = enumerableType.GetGenericArguments()[0];
+            return true;
         }
     }
 }

@@ -19,31 +19,37 @@ namespace NinjAPI.Query
         ParametersAggregate,
         Parameter,
         NullableExpression,
-        NullableIdentifier,
         Left,
         Right,
         Value,
         PropertyNavigation,
         PropertyNavigationAggregate,
+        PropertyNavigationChain,
 
         // Delimiters
         LeftParenthesis,
-        RigthParenthesis,
+        RightParenthesis,
         LeftBracket,
-        RigthBracket,
+        RightBracket,
         SingleQuote,
         Dollar,
         Comma,
         Dot,
 
-        // Other Terminals
+        // Operators
         LogicalOperator,
         ComparisionOperator,
-        Identifier,
+        
+        // id terminal
+        Identifier, 
+        
+        // function operators
         QuantifierFunctionAny,
         QuantifierFunctionAll,
         ElementFunction,
         MathFunction,
+
+        //
         String,
         Number,
         Boolean,

@@ -25,14 +25,15 @@ namespace NinjAPI.Query
                 TokenType.ExpressionPredicate,
                 new() {
                     { TokenType.EndOfLine, Array.Empty<TokenType>() },
-                    { TokenType.RigthParenthesis, Array.Empty<TokenType>() },
+                    { TokenType.RightParenthesis, Array.Empty<TokenType>() },
+                    { TokenType.RightBracket, Array.Empty<TokenType>() },
                     { TokenType.LogicalOperator, new TokenType[] { TokenType.LogicalOperator, TokenType.Expression } }
                 }
             },
             {
                 TokenType.Clause,
                 new() {
-                    { TokenType.LeftParenthesis, new TokenType[] { TokenType.LeftParenthesis, TokenType.Expression, TokenType.RigthParenthesis } },
+                    { TokenType.LeftParenthesis, new TokenType[] { TokenType.LeftParenthesis, TokenType.Expression, TokenType.RightParenthesis } },
                     { TokenType.Identifier,new TokenType[] { TokenType.Left, TokenType.ClausePredicate } },
                     { TokenType.Dollar,new TokenType[] { TokenType.Left, TokenType.ClausePredicate } }
                 }
@@ -40,23 +41,26 @@ namespace NinjAPI.Query
             {
                 TokenType.ClausePredicate,
                 new() {
-                    { TokenType.LeftBracket, new TokenType[] { TokenType.LeftBracket, TokenType.Function } },
+                    { TokenType.EndOfLine, Array.Empty<TokenType>() },
+                    { TokenType.LogicalOperator, Array.Empty<TokenType>() },
+                    { TokenType.RightParenthesis, Array.Empty<TokenType>() },
+                    { TokenType.RightBracket, Array.Empty<TokenType>() },
                     { TokenType.ComparisionOperator,new TokenType[] { TokenType.ComparisionOperator, TokenType.Right } }
                 }
             },
             {
                 TokenType.Function,
                 new() {
-                    { TokenType.QuantifierFunctionAny, new TokenType[] { TokenType.QuantifierFunctionAny, TokenType.LeftParenthesis, TokenType.NullableExpression, TokenType.RigthParenthesis, TokenType.RigthBracket } },
-                    { TokenType.QuantifierFunctionAll, new TokenType[] { TokenType.QuantifierFunctionAll, TokenType.LeftParenthesis, TokenType.Expression, TokenType.RigthParenthesis, TokenType.RigthBracket } },
-                    { TokenType.MathFunction, new TokenType[] { TokenType.MathFunction, TokenType.LeftParenthesis, TokenType.NullableIdentifier, TokenType.RigthParenthesis, TokenType.RigthBracket, TokenType.ComparisionOperator, TokenType.Right } },
-                    { TokenType.ElementFunction, new TokenType[] { TokenType.ElementFunction, TokenType.LeftParenthesis, TokenType.NullableExpression, TokenType.RigthParenthesis, TokenType.RigthBracket, TokenType.NullableIdentifier, TokenType.ComparisionOperator, TokenType.Right } }
+                    { TokenType.QuantifierFunctionAny, new TokenType[] { TokenType.QuantifierFunctionAny, TokenType.NullableExpression, TokenType.RightBracket } },
+                    { TokenType.QuantifierFunctionAll, new TokenType[] { TokenType.QuantifierFunctionAll, TokenType.Expression,  TokenType.RightBracket } },
+                    { TokenType.MathFunction, new TokenType[] { TokenType.MathFunction, TokenType.PropertyNavigation,  TokenType.RightBracket } },
+                    { TokenType.ElementFunction, new TokenType[] { TokenType.ElementFunction, TokenType.NullableExpression, TokenType.RightBracket, TokenType.PropertyNavigationChain} }
                 }
             },
             {
                 TokenType.DataBaseFunction,
                 new() {
-                    { TokenType.Dollar, new TokenType[] { TokenType.Dollar, TokenType.Identifier, TokenType.LeftParenthesis, TokenType.Parameters, TokenType.RigthParenthesis } }
+                    { TokenType.Dollar, new TokenType[] { TokenType.Dollar, TokenType.Identifier, TokenType.LeftParenthesis, TokenType.Parameters, TokenType.RightParenthesis } }
                 }
             },
             {
@@ -72,25 +76,17 @@ namespace NinjAPI.Query
             {
                 TokenType.ParametersAggregate,
                 new() {
-                    { TokenType.RigthParenthesis,  Array.Empty<TokenType>() },
+                    { TokenType.RightParenthesis,  Array.Empty<TokenType>() },
                     { TokenType.Comma, new TokenType[] { TokenType.Comma, TokenType.Parameter } }
                 }
             },
             {
                 TokenType.NullableExpression,
                 new() {
-                    { TokenType.Identifier, new TokenType[] { TokenType.Expression } },
-                    { TokenType.Dollar, new TokenType[] { TokenType.Expression } },
                     { TokenType.LeftParenthesis, new TokenType[] { TokenType.Expression } },
-                    { TokenType.RigthParenthesis,  Array.Empty<TokenType>() }
-                }
-            },
-            {
-                TokenType.NullableIdentifier,
-                new() {
-                    { TokenType.Identifier, new TokenType[] { TokenType.PropertyNavigation } },
-                    { TokenType.RigthParenthesis,  Array.Empty<TokenType>() },
-                    { TokenType.LogicalOperator,  Array.Empty<TokenType>() }
+                    { TokenType.RightBracket,  Array.Empty<TokenType>() },
+                    { TokenType.Identifier, new TokenType[] { TokenType.Expression } },
+                    { TokenType.Dollar, new TokenType[] { TokenType.Expression } }
                 }
             },
             {
@@ -128,10 +124,19 @@ namespace NinjAPI.Query
             {
                 TokenType.PropertyNavigationAggregate,
                 new() {
-                    { TokenType.RigthParenthesis, Array.Empty<TokenType>() },
+                    { TokenType.EndOfLine, Array.Empty<TokenType>() },
+                    { TokenType.LogicalOperator, Array.Empty<TokenType>() },
+                    { TokenType.RightParenthesis, Array.Empty<TokenType>() },
                     { TokenType.ComparisionOperator, Array.Empty<TokenType>() },
-                    { TokenType.LeftBracket, Array.Empty<TokenType>() },
+                    { TokenType.RightBracket, Array.Empty<TokenType>() },
+                    { TokenType.LeftBracket, new TokenType[] { TokenType.LeftBracket, TokenType.Function } },         
                     { TokenType.Comma, Array.Empty<TokenType>() },
+                    { TokenType.Dot, new TokenType[] { TokenType.PropertyNavigationChain } },
+                }
+            },
+            {
+                TokenType.PropertyNavigationChain,
+                new() {
                     { TokenType.Dot, new TokenType[] { TokenType.Dot, TokenType.PropertyNavigation } },
                 }
             },

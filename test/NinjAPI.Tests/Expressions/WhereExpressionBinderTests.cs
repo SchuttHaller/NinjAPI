@@ -32,6 +32,14 @@ namespace NinjAPI.Tests.Expressions
         }
 
         [TestMethod]
+        public void Filter_WithFunctionCallClause_ReturnsResult()
+        {
+            WhereExpressionBinderTestHelper(GetFunctionTestData<Book>());
+            WhereExpressionBinderTestHelper(GetFunctionTestData<Author>());
+            WhereExpressionBinderTestHelper(GetFunctionTestData<Sale>());
+        }
+
+        [TestMethod]
         public void Filter_WithComplexClause_ReturnsResult()
         {
             WhereExpressionBinderTestHelper(GetComplexTestData<Book>());
@@ -39,7 +47,8 @@ namespace NinjAPI.Tests.Expressions
         }
 
 
-        private void WhereExpressionBinderTestHelper<T>(Dictionary<string, Func<T, bool>> testData) where T : class         {
+        private void WhereExpressionBinderTestHelper<T>(Dictionary<string, Func<T, bool>> testData) where T : class         
+        {
             using var context = CreateContext();
             var dataSet = context.Set<T>();
 
@@ -95,6 +104,26 @@ namespace NinjAPI.Tests.Expressions
             if (typeof(T) == typeof(SaleItem))
             {
                 return (ChildAccessFilterForSaleItemModel as Dictionary<string, Func<T, bool>>)!;
+            }
+
+            throw new Exception($"Unsoported type {typeof(T)}");
+        }
+
+        private static Dictionary<string, Func<T, bool>> GetFunctionTestData<T>()
+        {
+            if (typeof(T) == typeof(Book))
+            {
+                return (FunctionFilterForBookModel as Dictionary<string, Func<T, bool>>)!;
+            }
+
+            if (typeof(T) == typeof(Author))
+            {
+                return (FunctionFilterForAuthorModel as Dictionary<string, Func<T, bool>>)!;
+            }
+
+            if (typeof(T) == typeof(Sale))
+            {
+                return (FunctionFilterForSaleModel as Dictionary<string, Func<T, bool>>)!;
             }
 
             throw new Exception($"Unsoported type {typeof(T)}");
@@ -167,6 +196,28 @@ namespace NinjAPI.Tests.Expressions
         #endregion
 
         #region Function Call Expressions Data
+        private static readonly Dictionary<string, Func<Book, bool>> FunctionFilterForBookModel = new()
+        {
+            { "saleItems[any]", x => x.SaleItems.Any() },
+            { "saleItems[any discount gt 0]", x => x.SaleItems.Any(s => s.Discount > 0) },
+            { "saleItems[any (sale.date gt '2023-02-06T09:10:45')]", x => x.SaleItems.Any(s => s.Sale.Date > new DateTime(2023,2,6,9,10,45)) },
+            { "saleItems[all discount eq 0]", x => x.SaleItems.All(s => s.Discount == 0) },
+        };
+
+        private static readonly Dictionary<string, Func<Author, bool>> FunctionFilterForAuthorModel = new()
+        {
+            { "books[first].name eq 'Der Steppenwolf'", x => x.Books.FirstOrDefault()?.Name == "Der Steppenwolf" },
+            { "books[last].price gt 10", x => x.Books.LastOrDefault()?.Price > 10 },
+            { "books[first price gt 10].name lk 'er'", x => x.Books.FirstOrDefault(b => b.Price > 5)?.Name.Contains("er") ?? false },
+            { "books[last price gt 10].name lk 'er'", x => x.Books.LastOrDefault(b => b.Price > 5)?.Name.Contains("er") ?? false },
+        };
+
+        private static readonly Dictionary<string, Func<Sale, bool>> FunctionFilterForSaleModel = new()
+        {
+            { "items[sum finalprice] gt 25", x => x.Items.Sum(i => i.FinalPrice) > 25 },
+            { "items[max finalprice] gt 12", x => x.Items.Max(i => i.FinalPrice) > 12 },
+            { "items[min finalprice] lt 12", x => x.Items.Min(i => i.FinalPrice) < 12 }
+        };
         #endregion
 
         #region Complex Expressions Data

@@ -43,18 +43,27 @@ namespace NinjAPI.Query
             Children.Add(child);
         }
 
-        public QueryNode? GetChildByType(TokenType type)
+        public QueryNode? GetChild(TokenType type)
         {
             return Children.FirstOrDefault(n => n.Type == type);
         }
 
-        public QueryNode? GetTypedChild()
+        public QueryNode? GetValueTypedChild()
         {
             return Children.FirstOrDefault(n =>
                 n.Type == TokenType.String
                 || n.Type == TokenType.Boolean 
                 || n.Type == TokenType.Number
                 || n.Type == TokenType.Null);
+        }
+
+        public QueryNode? GetFunctionChild()
+        {
+            return Children.FirstOrDefault(n =>
+                n.Type == TokenType.QuantifierFunctionAny
+                || n.Type == TokenType.QuantifierFunctionAll
+                || n.Type == TokenType.ElementFunction
+                || n.Type == TokenType.MathFunction);
         }
 
         public override string ToString()
@@ -69,8 +78,8 @@ namespace NinjAPI.Query
                     Children.Select(c => c.ToString()).Where(s => !string.IsNullOrEmpty(s))
                 ).Trim();
 
-            if (Type.IsPredicateOrAggregate() 
-                || (Parent != null && Parent.Type.IsPredicateOrAggregate())
+            if (Type.IsTransitionNode() 
+                || (Parent != null && Parent.Type.IsTransitionNode() && Parent.Type != TokenType.NullableExpression)
                 || Type == TokenType.Left)
             {
                 return $"{children}";
