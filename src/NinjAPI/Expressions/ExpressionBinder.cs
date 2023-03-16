@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Xml.Linq;
 using O = NinjAPI.Query.Operators;
 
@@ -85,9 +86,13 @@ namespace NinjAPI.Expressions
 
             // if no clause predicate, then return only the left side
             if (!predicateNode.Children.Any())
-                return left;
+                if (left is PropertyNavigationExpression navExp)
+                    return navExp.ToPlainExpression()!;
+                else 
+                    return left;
 
             var predicate = CreateClausePredicate(predicateNode, left, out QueryToken clauseOperator);
+
             return ComparisonExpression(left, predicate!, clauseOperator!);
         }
 
@@ -102,10 +107,9 @@ namespace NinjAPI.Expressions
 
             if (childNode.Type == TokenType.PropertyNavigation)
             {
-                return PropertyNavigation(childNode, aggregate);
+                return PropertyNavigation(childNode, aggregate.AsNavigationExpression());
             }
                
-
             return UserDefinedFunctionCall(childNode, aggregate);
         }
 
@@ -184,19 +188,31 @@ namespace NinjAPI.Expressions
 
         protected Expression ComparisonExpression(Expression left, Expression rigth, QueryToken comparisonOperator)
         {
-            return comparisonOperator.Value switch
+            Expression? nullPreventExpression = null;
+            if(left is PropertyNavigationExpression navExpression)
             {
-                Operators.Equal => Expression.Equal(left, rigth),
-                Operators.NotEqual => Expression.NotEqual(left, rigth),
-                Operators.GreaterThan => Expression.GreaterThan(left, rigth),
-                Operators.GreaterOrEqual => Expression.GreaterThanOrEqual(left, rigth),
-                Operators.LessThan => Expression.LessThan(left, rigth),
-                Operators.LessOrEqual => Expression.LessThanOrEqual(left, rigth),
-                Operators.Like => Expression.Call(left, left.Type.GetMethod("Contains", new[] { typeof(string)} )!, rigth),
-                Operators.StartsWith => Expression.Call(left, left.Type.GetMethod("StartsWith", new[] { typeof(string) })!, rigth),
-                Operators.EndsWith => Expression.Call(left, left.Type.GetMethod("EndsWith", new[] { typeof(string) })!, rigth),
+                left = navExpression.NavigationExpression;
+                nullPreventExpression = navExpression.NullPreventExpression;
+            }
+
+            Expression comparisionExpression = comparisonOperator.Value switch
+            {
+                O.Equal => Expression.Equal(left, rigth),
+                O.NotEqual => Expression.NotEqual(left, rigth),
+                O.GreaterThan => Expression.GreaterThan(left, rigth),
+                O.GreaterOrEqual => Expression.GreaterThanOrEqual(left, rigth),
+                O.LessThan => Expression.LessThan(left, rigth),
+                O.LessOrEqual => Expression.LessThanOrEqual(left, rigth),
+                O.Like => Expression.Call(left, left.Type.GetMethod("Contains", new[] { typeof(string)} )!, rigth),
+                O.StartsWith => Expression.Call(left, left.Type.GetMethod("StartsWith", new[] { typeof(string) })!, rigth),
+                O.EndsWith => Expression.Call(left, left.Type.GetMethod("EndsWith", new[] { typeof(string) })!, rigth),
                 _ => throw new ArgumentException($"Invalid comparison operator: {comparisonOperator.Value}"),
             };
+
+            if (nullPreventExpression != null)
+                return Expression.AndAlso(nullPreventExpression, comparisionExpression);
+
+            return comparisionExpression;
         }
 
         protected Expression FunctionExpression(Expression navigation, QueryNode functionNode, out QueryNode? navigationContinueNode)
@@ -265,42 +281,50 @@ namespace NinjAPI.Expressions
 
         }
 
-        protected Expression PropertyNavigation(QueryNode node, Expression navigationExp)
+        protected PropertyNavigationExpression PropertyNavigation(QueryNode node, PropertyNavigationExpression propertyNavExp)
         {
             if (node == null) throw new ArgumentNullException(nameof(node));
             if (node.Token == null) throw new ArgumentNullException(nameof(node), "Token cannot be null");
             if (node.Type != TokenType.PropertyNavigation) throw new ArgumentException("Token must be a valid identifier", nameof(node));
             if (!node.Children.Any()) throw new ArgumentException("node must have children", nameof(node));
 
-
+            var navigationExp = propertyNavExp.NavigationExpression;
             Type type = navigationExp.GetExpressionReturnType();
 
             var propertyKey = node.GetChild(TokenType.Identifier)!.Token as QueryToken;
             var property = GetEntityProperty(type, propertyKey!.Value);
-            var propertyExpression = Expression.Property(navigationExp, property);
+
+            Expression propertyExpression = Expression.Property(navigationExp, property);
+            Expression? nullPrevent = null;
+
+            if(navigationExp is not ParameterExpression)
+            {
+                nullPrevent = CreateNullPreventExpression(navigationExp, propertyNavExp.NullPreventExpression);
+            }
 
             var aggregate = node.GetChild(TokenType.PropertyNavigationAggregate)!;
 
             if (!aggregate.Children.Any())
-                return propertyExpression;
+                return propertyExpression.AsNavigationExpression(nullPrevent);
 
 
             if (aggregate.Children.Contains(TokenType.PropertyNavigationChain))
             {
                 var navigation = aggregate.GetChild(TokenType.PropertyNavigationChain)!.GetChild(TokenType.PropertyNavigation);
-                return PropertyNavigation(navigation!, propertyExpression);
+                return PropertyNavigation(navigation!, propertyExpression.AsNavigationExpression(nullPrevent));
             }
-
 
             if (aggregate.Children.Contains(TokenType.Function))
             {
                 var fNode = aggregate.GetChild(TokenType.Function)!;             
                 var functionExp = FunctionExpression(propertyExpression, fNode, out QueryNode? navigationContinue);
-                
+                nullPrevent = CreateNullPreventExpression(propertyExpression, nullPrevent);
+
                 if (navigationContinue != null)
-                    return PropertyNavigation(navigationContinue, functionExp);
-                
-                return functionExp;
+                    return PropertyNavigation(navigationContinue, functionExp.AsNavigationExpression(nullPrevent));
+
+
+                return functionExp.AsNavigationExpression(nullPrevent);
             }
 
             throw new ArgumentException($"Invalid aggregate: { aggregate }", nameof(node));
@@ -330,10 +354,20 @@ namespace NinjAPI.Expressions
             if(propNode != null)
             {
                 var param = Expression.Parameter(paramType!, "y");
-                return Expression.Lambda(PropertyNavigation(propNode, param), param);
+                return Expression.Lambda(PropertyNavigation(propNode, param.AsNavigationExpression()).ToPlainExpression(), param);
             }
 
             return null;
+        }
+
+        protected Expression? CreateNullPreventExpression(Expression expressionToPrevent, Expression? aggregate)
+        {
+            BinaryExpression nullCheck = Expression.NotEqual(expressionToPrevent, Expression.Constant(null, typeof(object)));
+            
+            if (aggregate != null)
+                return Expression.AndAlso(aggregate, nullCheck);
+           
+            return nullCheck;
         }
 
         private static PropertyInfo GetEntityProperty(Type type, string propertyName)

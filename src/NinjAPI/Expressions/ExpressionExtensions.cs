@@ -20,13 +20,26 @@ namespace NinjAPI.Expressions
         public static Type GetExpressionReturnType(this Expression expression)
         {
             return expression switch
-            {
-                MemberExpression memberExpression => memberExpression.Type,
-                ParameterExpression paramExpression => paramExpression.Type,
+            {              
                 MethodCallExpression methodCallExpression => methodCallExpression.Method.ReturnType,
                 LambdaExpression lambdaExpression => lambdaExpression.ReturnType,
-                _ => expression.Type.GetNullableType(),
+                _ => expression.Type,
             };
+        }
+
+        public static PropertyNavigationExpression AsNavigationExpression(this Expression source, Expression? nullPreventExpression = null)
+        {
+            return new PropertyNavigationExpression(source, nullPreventExpression);
+        }
+
+        public static Expression? ToPlainExpression(this PropertyNavigationExpression source)
+        {
+            if (source == null) return null;
+
+            if (source.NullPreventExpression != null)
+                return Expression.AndAlso(source.NullPreventExpression, source.NavigationExpression);
+
+            return source.NavigationExpression;
         }
     }
 }

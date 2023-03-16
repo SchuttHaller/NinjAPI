@@ -208,8 +208,8 @@ namespace NinjAPI.Tests.Expressions
         {
             { "books[first].name eq 'Der Steppenwolf'", x => x.Books.FirstOrDefault()?.Name == "Der Steppenwolf" },
             { "books[last].price gt 10", x => x.Books.LastOrDefault()?.Price > 10 },
-            { "books[first price gt 10].name lk 'er'", x => x.Books.FirstOrDefault(b => b.Price > 5)?.Name.Contains("er") ?? false },
-            { "books[last price gt 10].name lk 'er'", x => x.Books.LastOrDefault(b => b.Price > 5)?.Name.Contains("er") ?? false },
+            { "books[first price gt 10].name lk 'er'", x => x.Books.FirstOrDefault(b => b.Price > 10)?.Name.Contains("er") ?? false },
+            { "books[last price gt 10].name lk 'er'", x => x.Books.LastOrDefault(b => b.Price > 10)?.Name.Contains("er") ?? false },
         };
 
         private static readonly Dictionary<string, Func<Sale, bool>> FunctionFilterForSaleModel = new()

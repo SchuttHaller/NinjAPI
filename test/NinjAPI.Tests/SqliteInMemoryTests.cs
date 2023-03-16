@@ -63,7 +63,7 @@ namespace NinjAPI.Tests
                            Id = Guid.Parse("302cdb59-3e22-43ab-8f17-69edf2e8fa59"),
                            Name = "For Whom the Bell Tolls",
                            Stock= 10,
-                           Price= 11,
+                           Price= 10,
                        },
                         new Book {
                            Id = Guid.Parse("2eeb957c-a1aa-4e9c-a600-16401b29a30a"),
@@ -89,7 +89,7 @@ namespace NinjAPI.Tests
                            Id = Guid.Parse("461a4f87-d280-46fd-bb07-5d0d44da8803"),
                            Name = "Yerma",
                            Stock= 5,
-                           Price= 12,
+                           Price= 8,
                        }
                   }
               },
