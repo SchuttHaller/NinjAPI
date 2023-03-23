@@ -159,7 +159,7 @@ namespace NinjAPI.Query
             public static readonly ReadOnlyCollection<string> QuantifierOperators = new(new string[] { O.All, O.Any });
             public static readonly ReadOnlyCollection<string> MathFunctions = new(new string[] { O.Min, O.Max, O.Sum });
             public static readonly ReadOnlyCollection<char> Delimiters = new(new char[] { D.LeftParenthesis, D.RightParenthesis, D.LeftBracket, D.RightBracket, D.Comma, D.Dot, D.SingleQuote, D.Dollar });
-            public static readonly ReadOnlyCollection<string> ComparisionOperators = new(new string[] { O.Equal, O.NotEqual, O.GreaterThan, O.GreaterOrEqual, O.LessThan, O.LessOrEqual, O.Like, O.StartsWith, O.EndsWith });
+            public static readonly ReadOnlyCollection<string> ComparisionOperators = new(new string[] { O.Equal, O.NotEqual, O.GreaterThan, O.GreaterOrEqual, O.LessThan, O.LessOrEqual, O.Like, O.StartsWith, O.EndsWith, O.In });
             public static readonly ReadOnlyCollection<string> BooleanTypes = new(new string[] { T.False, T.True });
 
         }

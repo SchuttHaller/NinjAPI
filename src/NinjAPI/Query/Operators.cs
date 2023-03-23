@@ -22,6 +22,7 @@ namespace NinjAPI.Query
         // quantifier operators
         public const string Any = "any";
         public const string All = "all";
+        public const string In = "in";
 
         // logical operators
         public const string And = "and";

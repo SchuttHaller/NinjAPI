@@ -36,6 +36,7 @@ namespace NinjAPI.Tests.Query
         [DataRow("description lk 'jimmy\\'s test'", 6, 1, 1, 1)]
         [DataRow("name lk jimmy duarte", 5, 3, 1, 0)]
         [DataRow("closed eq true", 4, 1, 1, 1)]
+        [DataRow("id in (1,2,3,4)", 12, 1, 1, 4)]
         public void WhenQueryIsSimpleExpressionReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals)
         {
             var queryAnalyzer = new QueryLexer(query);
@@ -53,6 +54,7 @@ namespace NinjAPI.Tests.Query
         [DataRow("(name lk 'felipe') or lastname lk 'duarte'", 14, 2, 2, 2, 1)]
         [DataRow("id lk 'test001' or id lk 'test222' or createddate gt '23/11/12' and revenue eq 0", 22, 4, 4, 4, 3)]
         [DataRow("description lk 'jimmy\\'s \\\"test\\\"' or description lk 'pepe\\'s test'", 12, 2, 2, 2, 1)]
+        [DataRow("status eq 'active' and id in (2343, 5434)", 14, 2, 2, 3, 1)]
         public void WhenQueryHasLogicalOperatorsReturnsTable(string query, int expectedCount, int expectedIdentifiers, int expectedOperators, int expectedLiterals, int expectedLogicals)
         {
             var queryAnalyzer = new QueryLexer(query);
@@ -90,6 +92,7 @@ namespace NinjAPI.Tests.Query
 
         [TestMethod]
         [DataRow("students [ all ( passed eq true ) ]", 10, 2, 2,  1, 0, 5)]
+        [DataRow("students [ all ( id in (1,2,3,4) ) ]", 18, 2, 2, 4, 0, 10)]
         [DataRow("students [ first() ].id eq 10", 11, 2, 2, 1, 0, 6)]
         [DataRow("grade eq 2 and students [ all ( score gt 6 )]", 14, 3, 3, 2, 1, 5)]
         [DataRow("grade eq 2 and students [ any ( score lt 6 or absence eq 5 ) ]", 18, 4, 4, 3, 2, 5)]
